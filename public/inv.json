@@ -1,0 +1,13 @@
+{
+    "inventory":
+        {"items":
+            [
+                {
+                    "name": "Cup",
+                    "geometry": "Cup",
+                    "spawn": "spawn_point_cup",
+                    "count": 5
+                }
+            ]
+        }
+}
