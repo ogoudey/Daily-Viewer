@@ -1,7 +1,8 @@
 import * as THREE from 'three';
 import 'bootstrap/dist/css/bootstrap.min.css';
- 
-import loadModel  from './loader.js';
+
+
+import loadModel, {loadRobot}  from './loader.js';
 
 
 const canvas = document.querySelector('#c');
@@ -45,6 +46,8 @@ let model = null;
 let rotate_active = true;
 let inventory = null;
 let tick = 0
+let robot = null;
+let robot2 = null;
 /////////////////////
 // Load model     //
 ///////////////////
@@ -60,9 +63,32 @@ await loadModel()
     
   })
   .catch(console.error);
+  
+await loadRobot()
+    .then(robotScene => {
+        robot = robotScene;
+        scene.add(robotScene);
+    })
+    .catch(console.error);
+    
+await loadRobot()
+    .then(robotScene => {
+        robot2 = robotScene;
+        scene.add(robotScene);
+    })
+    .catch(console.error);
+    
+robot.position.z = -0.75; 
+robot.position.y = -0.15;
+robot2.position.z = -0.75; 
+robot2.position.y = -0.15;
+const scooperPoint = scene.getObjectByName("camera_point_scooper");
+scooperPoint.add(robot);
+const baristaPoint = scene.getObjectByName("camera_point_barista");
+baristaPoint.add(robot2);
 
 moveCameraToPoint("camera_point_barista");
-
+//camera.lookAt(robot.position);
 
 ///////////////////
 // Class helpers//
@@ -110,7 +136,9 @@ await loadData()
 printAllMeshes(scene);
 // Inventory
 
-arrange()
+arrange();
+
+
 
 /////////////////////
 // major helpers  //
@@ -188,6 +216,8 @@ printAllMeshes(scene);
 
 requestAnimationFrame(render); // Point WebGL to render() below
 
+
+
 //////////////////////
 // Render function //
 ////////////////////
@@ -195,6 +225,11 @@ requestAnimationFrame(render); // Point WebGL to render() below
 function render(time) {
     tick += 1;
     time *= 0.001;  // convert time to seconds
+    
+    randomizeJoints(robot);
+    randomizeJoints(robot2);
+
+    //console.log(robot.joints);
     
     if (resizeRendererToDisplaySize(renderer)) {
         const canvas = renderer.domElement;
@@ -216,6 +251,7 @@ function render(time) {
     if (model && rotate_active) {
         //model.rotation.y = time * 0.01;
         camera.rotation.y = time * 0.1;
+        
     }
     
     hovered = pickHelper.pick(pickPosition, scene, camera);
@@ -229,6 +265,9 @@ function render(time) {
     renderer.render(scene, camera);
     requestAnimationFrame(render);
 }
+
+
+
 
 ///////////////////////
 // Helper functions //
@@ -320,10 +359,21 @@ function resizeRendererToDisplaySize(renderer) {
     return needResize;
 }
 
+function randomizeJoints(robot) {
+  for (const jointName in robot.joints) {
+    const joint = robot.joints[jointName];
+
+    if (joint.setJointValue) {
+      // For revolute or continuous joints, random angle between -π and π
+      const randomAngle = (Math.random() * 2 - 1) * Math.PI;
+      joint.setJointValue(randomAngle);
+    }
+  }
+}
+
 /////////////////////
 //Event Listeners //
 ///////////////////
-
 window.addEventListener('click', choose);
 window.addEventListener('mousemove', setPickPosition);
 window.addEventListener('mouseout', clearPickPosition);
@@ -385,5 +435,4 @@ gazeboButton.addEventListener('click', async () => {
   // Placeholder action:
   alert('Scene would now be exported for Gazebo simulation.');
 });
-
 
