@@ -46,8 +46,8 @@ let model = null;
 let rotate_active = true;
 let inventory = null;
 let tick = 0
-let robot = null;
-let robot2 = null;
+let robots = [];
+
 /////////////////////
 // Load model     //
 ///////////////////
@@ -63,29 +63,9 @@ await loadModel()
     
   })
   .catch(console.error);
-  
-await loadRobot()
-    .then(robotScene => {
-        robot = robotScene;
-        scene.add(robotScene);
-    })
-    .catch(console.error);
     
-await loadRobot()
-    .then(robotScene => {
-        robot2 = robotScene;
-        scene.add(robotScene);
-    })
-    .catch(console.error);
-    
-robot.position.z = -0.75; 
-robot.position.y = -0.15;
-robot2.position.z = -0.75; 
-robot2.position.y = -0.15;
-const scooperPoint = scene.getObjectByName("camera_point_scooper");
-scooperPoint.add(robot);
-const baristaPoint = scene.getObjectByName("camera_point_barista");
-baristaPoint.add(robot2);
+
+
 
 moveCameraToPoint("camera_point_barista");
 //camera.lookAt(robot.position);
@@ -226,10 +206,11 @@ function render(time) {
     tick += 1;
     time *= 0.001;  // convert time to seconds
     
-    randomizeJoints(robot);
-    randomizeJoints(robot2);
+    robots.forEach((robot) => {
+        randomizeJoints(robot);
+    });
+    
 
-    //console.log(robot.joints);
     
     if (resizeRendererToDisplaySize(renderer)) {
         const canvas = renderer.domElement;
@@ -272,6 +253,20 @@ function render(time) {
 ///////////////////////
 // Helper functions //
 /////////////////////
+
+async function spawnRobot(robotName, spawnPointName) {
+    // Currently there's only one robot implemented
+    let robot;
+    await loadRobot()
+    .then(robotScene => {
+        robot = robotScene;
+        scene.add(robotScene);
+        robots.push(robot);
+    })
+    .catch(console.error);
+    const spawnPoint = scene.getObjectByName(spawnPointName);
+    spawnPoint.add(robot);
+}
 
 function moveCameraToPoint(pointName) {
   const newCameraPoint = scene.getObjectByName(pointName);
@@ -435,4 +430,21 @@ gazeboButton.addEventListener('click', async () => {
   // Placeholder action:
   alert('Scene would now be exported for Gazebo simulation.');
 });
+
+// 1. Activate every second-level toggle
+document.querySelectorAll('.dropdown-submenu > .dropdown-toggle')
+          .forEach(t => t.addEventListener('click', e => {
+              e.preventDefault();
+              e.stopPropagation();
+              bootstrap.Dropdown.getOrCreateInstance(t).toggle();
+          }));
+
+  /* leaf buttons -> your spawn handler */
+  document.querySelectorAll('.robot-spawn').forEach(btn =>
+    btn.addEventListener('click', e => {
+      const { robot, spawn } = e.currentTarget.dataset;
+      console.log(`Spawn ${robot} at ${spawn}`);
+      spawnRobot(robot, spawn);
+    })
+  );
 

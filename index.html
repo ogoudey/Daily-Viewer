@@ -20,6 +20,13 @@
       font-family: sans-serif;
       visibility: hidden;
     }
+
+    .dropdown-submenu.dropstart .dropdown-menu {
+      top: 0;
+      right: 100%;      /* open to the left */
+      left: auto;
+      margin-right: .1rem;   /* small gap  */
+    }
   </style>
 </head>
 <body class="position-relative overflow-hidden">
@@ -41,22 +48,57 @@
 
   <!-- Top-Left -->
   <div class="position-absolute top-0 start-0 m-3 dropdown">
-  <button class="btn btn-success dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
-    Change Camera
-  </button>
-  <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-    <li><button class="dropdown-item" id="tl-action-1">Barista</button></li>
-    <li><button class="dropdown-item" id="tl-action-2">Scooper</button></li>
-    <!-- Add more buttons as needed -->
-  </ul>
-</div>
+      <button class="btn btn-success dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+        Change Camera
+      </button>
+      <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+        <li><button class="dropdown-item" id="tl-action-1">Barista</button></li>
+        <li><button class="dropdown-item" id="tl-action-2">Scooper</button></li>
+        <!-- Add more buttons as needed -->
+      </ul>
+    </div>
 
   <!-- Top-Right -->
-  <div class="position-absolute top-0 end-0 m-3">
-    <span id="tr-badge" class="badge bg-warning text-dark fs-6">
-      Status
-    </span>
-  </div>
+  <div class="position-absolute top-0 end-0 m-3 dropdown"
+     data-bs-auto-close="outside">
+
+  <button id="addRobotMenuBtn"
+          class="btn btn-warning dropdown-toggle"
+          type="button"
+          data-bs-toggle="dropdown"
+          aria-expanded="false">
+    Add Robot
+  </button>
+
+  <ul class="dropdown-menu" aria-labelledby="addRobotMenuBtn">
+
+    <!-- Robot: Barista ─────────────────────────────────────────── -->
+    <li class="dropdown-submenu dropstart">
+      <a  class="dropdown-item dropdown-toggle" href="#" data-bs-toggle="dropdown">
+        Kinova
+      </a>
+      <ul class="dropdown-menu">
+        <li><button class="dropdown-item robot-spawn"
+                    data-robot="Kinova" data-spawn="camera_point_barista">Barista</button></li>
+        <li><button class="dropdown-item robot-spawn"
+                    data-robot="Kinova" data-spawn="camera_point_scooper">Scooper</button></li>
+      </ul>
+    </li>
+
+    <!-- Robot: Scooper ─────────────────────────────────────────── -->
+    <li class="dropdown-submenu dropstart">
+      <a  class="dropdown-item dropdown-toggle" href="#" data-bs-toggle="dropdown">
+        (other robots)
+      </a>
+      <ul class="dropdown-menu">
+        <li><button class="dropdown-item robot-spawn"
+                    data-robot="?" data-spawn="?">Floor?</button></li>
+        <li><button class="dropdown-item robot-spawn"
+                    data-robot="?" data-spawn="?">Huh?</button></li>
+      </ul>
+    </li>
+  </ul>
+</div>
 
   <!-- Bottom-Left -->
   <div class="position-absolute bottom-0 start-0 m-3">
@@ -78,7 +120,23 @@
     
   </div>
 
-  <script type="module" src="/src/main.js"></script>
+  
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+          // Every item that owns a submenu gets its own Dropdown controller
+          document
+            .querySelectorAll('.dropdown-submenu > .dropdown-toggle')
+            .forEach(toggle => {
+              // Prevent the browser from following the "#" link
+              toggle.addEventListener('click', e => {
+                e.preventDefault();
+                e.stopPropagation();                   // keep parent menu open
+                bootstrap.Dropdown.getOrCreateInstance(toggle).toggle(); // show/hide child
+              });
+            });
+        });
+    </script>
+    <script type="module" src="/src/main.js"></script>
 </body>
 </html>
