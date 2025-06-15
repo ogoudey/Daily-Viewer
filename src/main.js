@@ -32,44 +32,6 @@ light.position.set(-1, 2, 4);
 //scene.add(light);
 camera.add(light);
 
-
-/////////////////////
-//   UI vars      //
-///////////////////
-let choice = "";
-let hovered = "";
-
-/////////////////////
-// Mechanics vars //
-///////////////////
-let model = null;
-let rotate_active = true;
-let inventory = null;
-let tick = 0
-let robots = [];
-
-/////////////////////
-// Load model     //
-///////////////////
-
-// load then conform it to JSON
-await loadModel()
-  .then(modelScene => {
-    scene.add(modelScene);
-    model = modelScene;
-    
-    // safe to rotate now!
-    model.rotation.y = 0.0;
-    
-  })
-  .catch(console.error);
-    
-
-
-
-moveCameraToPoint("camera_point_barista");
-//camera.lookAt(robot.position);
-
 ///////////////////
 // Class helpers//
 /////////////////
@@ -105,24 +67,61 @@ const pickHelper = new PickHelper();
 const pickPosition = {x: 0, y: 0};
 clearPickPosition();
 
-await loadData()
-  .then(data => {
-    // data.inventory is your array of daily snapshots
-    inventory = data["inventory"]["items"];
-    // → now pass it into your Three.js rendering logic…
-  })
-  .catch(err => console.error('Failed to load JSON', err));
 
-printAllMeshes(scene);
-// Inventory
-
-arrange();
 
 
 
 /////////////////////
+//   UI vars      //
+///////////////////
+let choice = "";
+let hovered = "";
+let rotate_active = true;
+let tick = 0;
+let robots = [];
+
+/////////////////////
+//  Arena-level   //
+///////////////////
+let model = null;
+let inventory = null;
+let arena = null;
+
+///////////////////
+//    World     //
+/////////////////
+let worldNotation = {
+    "25_central_square": {
+        "cameras": ["camera_point_barista", "camera_point_scooper"]
+    }
+}
+
+/////////////////////
 // major helpers  //
 ///////////////////
+
+async function load(arenaToLoad) {
+    if (!arenaToLoad) {
+        arenaToLoad = getRandomArena(worldNotation)
+    }
+    await loadModel(arenaToLoad).then(modelScene => {
+        scene.add(modelScene);
+        model = modelScene;
+
+        // safe to rotate now!
+        model.rotation.y = 0.0;
+
+    }).catch(console.error);
+    
+    await loadData().then(data => {
+        // data.inventory is your array of daily snapshots
+        inventory = data[arenaToLoad]["inventory"]["items"];
+        // → now pass it into your Three.js rendering logic…
+    }).catch(err => console.error('Failed to load JSON', err));
+    moveCameraToPoint(worldNotation[arenaToLoad]["cameras"][0]);
+    arrange();
+    arena = arenaToLoad;
+}
 
 function arrange() {
     console.log("Arranging...");
@@ -192,11 +191,13 @@ function inspect() {
     }     
 }
 
-printAllMeshes(scene);
+////////////////
+// Start Up  //
+//////////////
+
+await load(null);
 
 requestAnimationFrame(render); // Point WebGL to render() below
-
-
 
 //////////////////////
 // Render function //
@@ -218,11 +219,11 @@ function render(time) {
         camera.updateProjectionMatrix();
     }    
     
-    // Lazy stream
+    // Lazy stream for Arranging
     if (tick % 1000 === 0) {
         loadData()
           .then(data => {
-            inventory = data["inventory"]["items"];
+            inventory = data[arena]["inventory"]["items"];
           })
           .catch(err => console.error('Failed to load JSON', err));
         arrange();
@@ -366,6 +367,31 @@ function randomizeJoints(robot) {
   }
 }
 
+function getRandomArena(json) {
+  const keys = Object.keys(json);                            // e.g. ["A","V"]
+  const idx  = Math.floor(Math.random() * keys.length);     // 0 ≤ idx < keys.length
+  return keys[idx];
+}
+
+function addPointDropdown(id, f) {
+    const menu = document.getElementById(id);
+    const options = worldNotation[arena].cameras; // Potentially change
+    options.forEach(name => {
+        const li = document.createElement("li");
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "dropdown-item";
+        btn.textContent = name;
+        // optional: hook up a click handler
+        btn.addEventListener("click", () => {
+
+            f(name);
+        });
+        li.appendChild(btn);
+        menu.appendChild(li);
+    });
+}
+
 /////////////////////
 //Event Listeners //
 ///////////////////
@@ -388,9 +414,51 @@ window.addEventListener('touchmove', (event) => {
  
 window.addEventListener('touchend', clearPickPosition);
 
+// camera dropdown
+addPointDropdown("cameraMenu", moveCameraToPoint)
+
+const form = document.getElementById("arenaForm");
+const arenas = Object.keys(worldNotation);
+arenas.forEach((arenaName, idx) => {
+  // 1) wrapper div
+  const wrapper = document.createElement('div');
+  wrapper.className = 'form-check';
+
+  // 2) the radio input
+  const input = document.createElement('input');
+  input.className = 'form-check-input';
+  input.type      = 'radio';
+  input.name      = 'arenaOption';
+  input.id        = `arena-option-${idx}`;
+  input.value     = arenaName;
+  if (idx === 0) input.checked = true;     // default first checked
+
+  // 3) the label
+  const label = document.createElement('label');
+  label.className = 'form-check-label';
+  label.htmlFor   = input.id;
+  label.textContent = arenaName;
+
+  // 4) assemble & attach
+  wrapper.appendChild(input);
+  wrapper.appendChild(label);
+  form.appendChild(wrapper);
+});
+
 ////////////////////////
 //Specific Listeners //
 //////////////////////
+
+document.getElementById('reloadBtn').addEventListener('click', () => {
+  // grab the checked radio’s value
+  const chosen = document.querySelector('input[name="arenaOption"]:checked').value;
+  // call your loader
+  load(chosen);
+  // hide the modal
+  const modalEl = document.getElementById('configModal');
+  const modal = bootstrap.Modal.getInstance(modalEl);
+  modal.hide();
+});
 
 const blButton = document.getElementById('bl-button');
 
@@ -402,8 +470,8 @@ function handleBottomLeftClick(event) {
 blButton.addEventListener('click', handleBottomLeftClick);
 
 // Dropdown buttons
-const tlAction1 = document.getElementById('tl-action-1');
-const tlAction2 = document.getElementById('tl-action-2');
+//const tlAction1 = document.getElementById('tl-action-1');
+//const tlAction2 = document.getElementById('tl-action-2');
 
 function handleTopLeftAction1Click(event) {
   console.log('Top-left Action 1 clicked!', event);
@@ -416,8 +484,8 @@ function handleTopLeftAction2Click(event) {
   moveCameraToPoint("camera_point_scooper");
 }
 
-tlAction1.addEventListener('click', handleTopLeftAction1Click);
-tlAction2.addEventListener('click', handleTopLeftAction2Click);
+//tlAction1.addEventListener('click', handleTopLeftAction1Click);
+//tlAction2.addEventListener('click', handleTopLeftAction2Click);
 
 const gazeboButton = document.getElementById('gazebo-button');
 

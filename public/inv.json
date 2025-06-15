@@ -1,13 +1,15 @@
 {
-    "inventory":
-        {"items":
-            [
-                {
-                    "name": "Cup",
-                    "geometry": "Cup",
-                    "spawn": "spawn_point_cup",
-                    "count": 5
-                }
-            ]
-        }
+    "25_central_square": {
+        "inventory":
+            {"items":
+                [
+                    {
+                        "name": "Cup",
+                        "geometry": "Cup",
+                        "spawn": "spawn_point_cup",
+                        "count": 5
+                    }
+                ]
+            }
+    }
 }

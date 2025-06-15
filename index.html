@@ -47,16 +47,69 @@
   </div>
 
   <!-- Top-Left -->
-  <div class="position-absolute top-0 start-0 m-3 dropdown">
+  <div class="position-absolute top-0 start-0 m-3 d-flex align-items-center gap-2">
+    <div class="dropdown">
       <button class="btn btn-success dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
         Change Camera
       </button>
-      <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-        <li><button class="dropdown-item" id="tl-action-1">Barista</button></li>
-        <li><button class="dropdown-item" id="tl-action-2">Scooper</button></li>
-        <!-- Add more buttons as needed -->
+      <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton" id="cameraMenu">
+        
       </ul>
     </div>
+    
+    <button
+      type="button"
+      class="btn btn-primary ms-2"
+      data-bs-toggle="modal"
+      data-bs-target="#configModal"
+    >
+      Configure
+    </button>
+  </div>
+  
+  <!-- DIALOGUE -->
+  <div
+    class="modal fade"
+    id="configModal"
+    tabindex="-1"
+    aria-labelledby="configModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="configModalLabel">
+            Configuration
+          </h5>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="modal-body">
+          <form id="arenaForm">
+          
+
+          <!-- added by JS -->
+        </form>
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+          >
+            Close
+          </button>
+          <button id=reloadBtn type="button" class="btn btn-primary">
+            Save changes
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Top-Right -->
   <div class="position-absolute top-0 end-0 m-3 dropdown"
