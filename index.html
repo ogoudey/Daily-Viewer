@@ -143,36 +143,37 @@
               aria-expanded="false">
         Add Robot
       </button>
+      <ul class="dropdown-menu" aria-labelledby="addRobotMenuBtn">
+
+        <!-- Robot: Barista ─────────────────────────────────────────── -->
+        <li class="dropdown-submenu dropstart">
+          <a  class="dropdown-item dropdown-toggle" href="#" data-bs-toggle="dropdown">
+            Kinova
+          </a>
+          <ul class="dropdown-menu">
+            <li><button class="dropdown-item robot-spawn"
+                        data-robot="Kinova" data-spawn="camera_point_barista">Barista</button></li>
+            <li><button class="dropdown-item robot-spawn"
+                        data-robot="Kinova" data-spawn="camera_point_scooper">Scooper</button></li>
+          </ul>
+        </li>
+
+        <!-- Robot: Scooper ─────────────────────────────────────────── -->
+        <li class="dropdown-submenu dropstart">
+          <a  class="dropdown-item dropdown-toggle" href="#" data-bs-toggle="dropdown">
+            (other robots)
+          </a>
+          <ul class="dropdown-menu">
+            <li><button class="dropdown-item robot-spawn"
+                        data-robot="?" data-spawn="?">Floor?</button></li>
+            <li><button class="dropdown-item robot-spawn"
+                        data-robot="?" data-spawn="?">Huh?</button></li>
+          </ul>
+        </li>
+      </ul>
   </div>
 
-  <ul class="dropdown-menu" aria-labelledby="addRobotMenuBtn">
-
-    <!-- Robot: Barista ─────────────────────────────────────────── -->
-    <li class="dropdown-submenu dropstart">
-      <a  class="dropdown-item dropdown-toggle" href="#" data-bs-toggle="dropdown">
-        Kinova
-      </a>
-      <ul class="dropdown-menu">
-        <li><button class="dropdown-item robot-spawn"
-                    data-robot="Kinova" data-spawn="camera_point_barista">Barista</button></li>
-        <li><button class="dropdown-item robot-spawn"
-                    data-robot="Kinova" data-spawn="camera_point_scooper">Scooper</button></li>
-      </ul>
-    </li>
-
-    <!-- Robot: Scooper ─────────────────────────────────────────── -->
-    <li class="dropdown-submenu dropstart">
-      <a  class="dropdown-item dropdown-toggle" href="#" data-bs-toggle="dropdown">
-        (other robots)
-      </a>
-      <ul class="dropdown-menu">
-        <li><button class="dropdown-item robot-spawn"
-                    data-robot="?" data-spawn="?">Floor?</button></li>
-        <li><button class="dropdown-item robot-spawn"
-                    data-robot="?" data-spawn="?">Huh?</button></li>
-      </ul>
-    </li>
-  </ul>
+  
 </div>
 
   <!-- Bottom-Left -->

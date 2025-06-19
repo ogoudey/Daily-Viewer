@@ -1,11 +1,10 @@
-const backend_ip_address = "192.168.0.10"
-
 import * as THREE from 'three';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 import loadModel, {loadRobot}  from './loader.js';
 
-
+const backend_ip_address = "192.168.0.10"
+console.log("1. imports done");
 const canvas = document.querySelector('#c');
 const renderer = new THREE.WebGLRenderer({antialias: true, canvas}); // This calls what we pass requestAnimationFrame
 const fov = 50;
@@ -97,28 +96,32 @@ let worldNotation = {
 /////////////////////
 // major helpers  //
 ///////////////////
-
+console.log("2. things initialized");
 async function load(arenaToLoad) {
+    console.log("3.0.0 loading start")
     if (!arenaToLoad) {
         arenaToLoad = getRandomArena(worldNotation)
     }
-    await loadModel(arenaToLoad).then(modelScene => {
-        scene.add(modelScene);
-        model = modelScene;
-
-        // safe to rotate now!
-        model.rotation.y = 0.0;
-
-    }).catch(console.error);
-    
-    await loadData().then(data => {
-        // data.inventory is your array of daily snapshots
-        inventory = data[arenaToLoad]["inventory"]["items"];
-        // → now pass it into your Three.js rendering logic…
-    }).catch(err => console.error('Failed to load JSON', err));
+    console.log("3.0.0.0 loading", arenaToLoad)
+    try {
+      const modelScene = await loadModel(arenaToLoad);
+      scene.add(modelScene);
+      model = modelScene;
+      model.rotation.y = 0.0;
+    } catch (err) {
+      console.error(err);
+    }
+    console.log("3.0.0.1 arena loaded")
+    try {
+      const data = await loadData();
+      inventory = data[arenaToLoad]["inventory"]["items"];
+    } catch (err) {
+      console.error('Failed to load JSON', err);
+    }
     moveCameraToPoint(worldNotation[arenaToLoad]["cameras"][0]);
     arrange();
     arena = arenaToLoad;
+    console.log("3.0.1 loading done. arena:", arena)
 }
 
 function arrange() {
@@ -193,10 +196,14 @@ function inspect() {
 // Start Up  //
 //////////////
 
-await load(null);
+// Gettaround top-level await
+console.log("3. startup");
 
+await load();
+
+console.log("3.2 startup done");
 requestAnimationFrame(render); // Point WebGL to render() below
-
+console.log("4. first render request");
 //////////////////////
 // Render function //
 ////////////////////
@@ -224,6 +231,7 @@ function render(time) {
             inventory = data[arena]["inventory"]["items"];
           })
           .catch(err => console.error('Failed to load JSON', err));
+        
         arrange();
     }
     // end lazy steam
@@ -372,8 +380,11 @@ function getRandomArena(json) {
 }
 
 function addPointDropdown(id, f) {
+    console.log("\t5.5.0");
     const menu = document.getElementById(id);
+    console.log("\t5.5.1 arena:", arena);
     const options = worldNotation[arena].cameras; // Potentially change
+    console.log("\t5.5.2");
     options.forEach(name => {
         const li = document.createElement("li");
         const btn = document.createElement("button");
@@ -389,7 +400,7 @@ function addPointDropdown(id, f) {
         menu.appendChild(li);
     });
 }
-
+console.log("5. helper functions declared");
 /////////////////////
 //Event Listeners //
 ///////////////////
@@ -413,9 +424,11 @@ window.addEventListener('touchmove', (event) => {
 window.addEventListener('touchend', clearPickPosition);
 
 // camera dropdown
-addPointDropdown("cameraMenu", moveCameraToPoint)
-
+console.log("5.5. before addPointDropdown('cameraMenu', moveCameraToPoint)");
+addPointDropdown("cameraMenu", moveCameraToPoint);
+console.log("6. first event-listeners");
 const form = document.getElementById("arenaForm");
+console.log("6.5. form:", form);
 const arenas = Object.keys(worldNotation);
 arenas.forEach((arenaName, idx) => {
   // 1) wrapper div
@@ -442,7 +455,7 @@ arenas.forEach((arenaName, idx) => {
   wrapper.appendChild(label);
   form.appendChild(wrapper);
 });
-
+console.log("7. configure button made");
 ////////////////////////
 //Specific Listeners //
 //////////////////////
@@ -527,4 +540,4 @@ document.querySelectorAll('.dropdown-submenu > .dropdown-toggle')
       spawnRobot(robot, spawn);
     })
   );
-
+console.log("8. rest of the buttons done - and Done.");

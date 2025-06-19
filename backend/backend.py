@@ -1,10 +1,10 @@
-from flask import Flask
+from flask import Flask, send_from_directory
 from flask_cors import CORS
 
 import subprocess
 import sys
 
-app = Flask(__name__, static_folder="dist")
+app = Flask(__name__, static_folder="../dist")
 CORS(app)
 
 node = None;
@@ -18,11 +18,11 @@ class NewNode:
     
 @app.route("/")
 def serve_index():
-    return send_from_directory('dist', 'index.html')
+    return send_from_directory('../dist', 'index.html')
     
 @app.route('/<path:path>')
 def serve_static(path):
-    return send_from_directory('dist', path)
+    return send_from_directory('../dist', path)
     
       
 
@@ -50,4 +50,5 @@ def restart():
 
 host = sys.argv[1] if len(sys.argv) > 1 else "localhost"
 
+print("Running on", host)
 app.run(host=host, port=5000)

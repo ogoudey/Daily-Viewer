@@ -6,6 +6,7 @@ import csq_path     from './assets/25_central_square.glb';
 import robot_path     from './assets/kinova.urdf';
 //const robot_path     from '/assets/kinova.urdf';
 
+
 const ARENAS = {
     "25_central_square": csq_path
 }
