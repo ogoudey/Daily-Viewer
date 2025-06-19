@@ -1,6 +1,7 @@
+const backend_ip_address = "192.168.0.10"
+
 import * as THREE from 'three';
 import 'bootstrap/dist/css/bootstrap.min.css';
-
 
 import loadModel, {loadRobot}  from './loader.js';
 
@@ -21,9 +22,6 @@ camera.rotation.y = 0.0;
 const scene = new THREE.Scene();
 scene.background = new THREE.Color('gray');
 scene.updateMatrixWorld(true);
-
-
-
 
 const color = 0xFFFFFF;
 const intensity = 5;
@@ -491,12 +489,26 @@ const gazeboButton = document.getElementById('gazebo-button');
 
 gazeboButton.addEventListener('click', async () => {
   console.log('Simulate with Gazebo clicked!');
-  
-  // Example: Export scene and generate SDF
+  const res = await fetch('http://' + backend_ip_address + ':5000/launch-sim');
+  const output = await res.text();
+});
 
+const pyButton = document.getElementById('send_request');
 
-  // Placeholder action:
-  alert('Scene would now be exported for Gazebo simulation.');
+pyButton.addEventListener('click', async () => {
+  console.log('Sending...');
+  const res = await fetch('http://' + backend_ip_address + ':5000/run-script');
+  const output = await res.text();
+  console.log('Python says:', output);
+});
+
+const pyButton3 = document.getElementById('restart');
+
+pyButton3.addEventListener('click', async () => {
+  console.log('Sending...');
+  const res = await fetch('http://' + backend_ip_address + ':5000/restart');
+  const output = await res.text();
+  console.log('Mess:', output);
 });
 
 // 1. Activate every second-level toggle
