@@ -3,7 +3,11 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 
 import loadModel, {loadRobot}  from './loader.js';
 
-const backend_ip_address = "192.168.0.10"
+import placers  from './placer.js';
+console.log(placers); // Should print whawt objects: A. were arranged & in inventory B. were in inventory and not arranged 
+
+//const backend_ip_address = "192.168.0.10"
+const backend_ip_address = "localhost"
 console.log("1. imports done");
 const canvas = document.querySelector('#c');
 const renderer = new THREE.WebGLRenderer({antialias: true, canvas}); // This calls what we pass requestAnimationFrame
@@ -126,6 +130,7 @@ async function load(arenaToLoad) {
 
 function arrange() {
     console.log("Arranging...");
+    // TODO: Get items AND their cases, (reform inventory)
     inventory.forEach((item) => {
       const original = scene.getObjectByName(item.geometry);
       if (!original) {
@@ -148,7 +153,14 @@ function arrange() {
         } else {
           console.warn('No spawn point named "${item.spawn}" found; defaulting to origin');
         }
-        worldPos.y += i * 0.051; // REPLACE WITH FUNCTION LOOKUP BY ITEM
+        let placerFunction = placers[item.name];
+        if (!placerFunction) {
+            placerFunction = placers["default"]; // placeCup
+            console.warn("No placer function implemented for", item.name);
+        }
+        worldPos = placerFunction(worldPos, i);
+        
+
         
         const clone = original.clone(true);
         const localPos = model.worldToLocal(worldPos.clone());
@@ -183,7 +195,7 @@ function inspect() {
         
         const count = document.getElementById('count');
         const record = inventory.find(item => item.geometry === choiceObject.name);
-        const num = record ? record.count : "";
+        const num = record ? record.count : "untracked.";
         count.innerText = num.toString();
         ///
     } else {

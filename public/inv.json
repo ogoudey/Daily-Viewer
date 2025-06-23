@@ -1,15 +1,41 @@
 {
-    "25_central_square": {
-        "inventory":
-            {"items":
-                [
-                    {
-                        "name": "Cup",
-                        "geometry": "Cup",
-                        "spawn": "spawn_point_cup",
-                        "count": 5
-                    }
-                ]
-            }
-    }
+    "25_central_square":
+        {
+            "inventory":
+                {
+                    "items":
+                        [
+                            {
+                                "name": "Cup",
+                                "geometry": "Cup",
+                                "spawn": "spawn_point_cup",
+                                "count": 10,
+                                "case": 
+                                    {
+                                        "name":"Cup_Sleeve",
+                                        "parts-per":12,
+                                        "geometry": "Cup_Sleeve",
+                                        "spawn": "spawn_point_cup_sleeve",
+                                        "count":30,
+                                        "case":
+                                            {
+                                                "name":"Cup_Case",
+                                                "parts-per":40,
+                                                "geometry": "Cup_Case",
+                                                "spawn": "spawn_point_cup_case",
+                                                "count": 2
+                                            }
+                                            
+                                    }
+                                
+                            },
+                            {
+                                "name": "Coffee",
+                                "geometry": "Coffee",
+                                "spawn": "spawn_point_coffee",
+                                "count": 10
+                            }
+                        ]
+                }
+        }
 }
