@@ -117,8 +117,14 @@ async function load(arenaToLoad) {
     }
     console.log("3.0.0.1 arena loaded")
     try {
-      const data = await loadData();
-      inventory = data[arenaToLoad]["inventory"]["items"];
+      const dataSeries = await loadData(arenaToLoad);
+
+        if (dataSeries.length > 0) {
+          const latest = dataSeries[dataSeries.length - 1];
+          inventory = latest.data.inventory.items;
+        } else {
+          console.warn("No time series data found.");
+        }
     } catch (err) {
       console.error('Failed to load JSON', err);
     }
@@ -246,9 +252,16 @@ function render(time) {
     
     // Lazy stream for Arranging
     if (tick % 1000 === 0) {
-        loadData()
-          .then(data => {
-            inventory = data[arena]["inventory"]["items"];
+        loadData(arena)
+          .then(dataSeries => {
+
+
+            if (dataSeries.length > 0) {
+              const latest = dataSeries[dataSeries.length - 1];
+              inventory = latest.data.inventory.items;
+            } else {
+              console.warn("No time series data found.");
+            }
           })
           .catch(err => console.error('Failed to load JSON', err));
         
@@ -322,10 +335,25 @@ function printAllMeshes(root) {
   return meshes;
 }
 
-async function loadData() {
-  const res = await fetch('/inv.json');
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  return res.json();
+async function getArenaIdByName(name) {
+  const response = await fetch(`http://localhost:5000/arenas/by_name/${encodeURIComponent(name)}`);
+  if (!response.ok) throw new Error("Arena not found");
+  const result = await response.json();
+  return result.arena_id;
+}
+
+async function loadData(arena_name) {
+  try {
+    const arenaId = await getArenaIdByName(arena_name);
+    const response = await fetch(`http://localhost:5000/arenas/${arenaId}/data`);
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+    const data = await response.json();
+    console.log("Time-series data:", data);
+    return data;
+  } catch (err) {
+    console.error("Failed to load data:", err);
+  }
 }
 
 // -------click
