@@ -59,7 +59,7 @@ def restart():
 
 # Check status with `$ sudo systemctl status mysql`
 
-# Done in mysql CLI
+# Done in mysql CLI:
 # CREATE USER 'flaskuser'@'localhost' IDENTIFIED BY 'flaskpass';
 # GRANT ALL PRIVILEGES ON dev.* TO 'flaskuser'@'localhost';
 # FLUSH PRIVILEGES;
@@ -110,7 +110,6 @@ def get_data(arena_id):
         {"timestamp": entry.timestamp.isoformat(), "data": entry.data}
         for entry in entries
     ])
-
   
 @app.route("/arenas/by_name/<string:arena_name>", methods=["GET"])
 def get_arena_by_name(arena_name):
@@ -119,15 +118,15 @@ def get_arena_by_name(arena_name):
         return jsonify({"error": "Arena not found"}), 404
     return jsonify({"arena_id": arena.id})
 
-def log_nested_data_by_name(arena_name):
+def log_dev_data_by_name(arena_name):
     arena = Arena.query.filter_by(name=arena_name).first()
     if not arena:
         raise ValueError("Arena not found")
 
-    log_nested_data(arena_id=arena.id)
+    log_dev_data(arena_id=arena.id)
 
-def log_nested_data(arena_id):
-    nested_data = {
+def log_dev_data(arena_id):
+    dev_data = {
             "inventory": {
                 "items": [
                     {
@@ -140,7 +139,7 @@ def log_nested_data(arena_id):
                             "parts-per": 12,
                             "geometry": "Cup_Sleeve",
                             "spawn": "spawn_point_cup_sleeve",
-                            "count": 30,
+                            "count": 7,
                             "case": {
                                 "name": "Cup_Case",
                                 "parts-per": 40,
@@ -163,7 +162,7 @@ def log_nested_data(arena_id):
     entry = TimeData(
         arena_id=arena_id,
         timestamp=datetime.utcnow(),
-        data=nested_data
+        data=dev_data
     )
 
     db.session.add(entry)
@@ -202,7 +201,7 @@ def get_or_create_arena(profile_name, world_name, arena_name):
 
 with app.app_context():
     arena_id = get_or_create_arena("developer", "world1", "25_central_square")
-    log_nested_data(arena_id)
+    log_dev_data(arena_id) # inserts a timestamp of the current data, the JSON passed front-back
 
 host = sys.argv[1] if len(sys.argv) > 1 else "localhost"
 print("Running on", host)

@@ -136,7 +136,6 @@ async function load(arenaToLoad) {
 
 function arrange() {
     console.log("Arranging...");
-    // TODO: Get items AND their cases, (reform inventory)
     
     let itemsToPlace = structuredClone(inventory)
     while (itemsToPlace.length > 0) {
@@ -203,15 +202,28 @@ function inspect() {
         tag.style.left = `${x}px`;
         tag.style.top  = `${y - 30}px`;
         
-        // CHange to either count all items or count cases and items respectively
-        const record1 = inventory.find(item => item.geometry === choiceObject.name);
-        tag.children[0].innerText = record1 ? record1.name : "";;
+        let itemsToCheck = structuredClone(inventory);
+        let item;
+        while (itemsToCheck.length > 0) {
+            item = itemsToCheck.shift();
+            if (item.geometry === choiceObject.name) {
+                break;
+            }else {
+                
+                if (item.case) {
+                    itemsToCheck.push(item.case);
+                }
+                item = null;
+                
+            }
+        }
         
+        tag.children[0].innerText = item ? item.name : "";
         const count = document.getElementById('count');
         const record = inventory.find(item => item.geometry === choiceObject.name);
-        const num = record ? record.count : "untracked.";
+        const num = item ? item.count : "untracked";
         count.innerText = num.toString();
-        ///
+
     } else {
         const tag = document.getElementById('inspector');
         tag.style.visibility="hidden";
@@ -222,7 +234,6 @@ function inspect() {
 // Start Up  //
 //////////////
 
-// Gettaround top-level await
 console.log("3. startup");
 
 await load();
@@ -254,8 +265,6 @@ function render(time) {
     if (tick % 1000 === 0) {
         loadData(arena)
           .then(dataSeries => {
-
-
             if (dataSeries.length > 0) {
               const latest = dataSeries[dataSeries.length - 1];
               inventory = latest.data.inventory.items;
@@ -264,15 +273,12 @@ function render(time) {
             }
           })
           .catch(err => console.error('Failed to load JSON', err));
-        
         arrange();
     }
-    // end lazy steam
+    // end lazy stream
     
     if (model && rotate_active) {
-        //model.rotation.y = time * 0.01;
-        camera.rotation.y = time * 0.1;
-        
+        camera.rotation.y = time * 0.1;  
     }
     
     hovered = pickHelper.pick(pickPosition, scene, camera);
@@ -511,7 +517,7 @@ console.log("7. configure button made");
 document.getElementById('reloadBtn').addEventListener('click', () => {
   // grab the checked radio’s value
   const chosen = document.querySelector('input[name="arenaOption"]:checked').value;
-  // call your loader
+  // call the loader
   load(chosen);
   // hide the modal
   const modalEl = document.getElementById('configModal');
@@ -528,10 +534,6 @@ function handleBottomLeftClick(event) {
 
 blButton.addEventListener('click', handleBottomLeftClick);
 
-// Dropdown buttons
-//const tlAction1 = document.getElementById('tl-action-1');
-//const tlAction2 = document.getElementById('tl-action-2');
-
 function handleTopLeftAction1Click(event) {
   console.log('Top-left Action 1 clicked!', event);
   moveCameraToPoint("camera_point_barista");
@@ -542,9 +544,6 @@ function handleTopLeftAction2Click(event) {
   console.log('Top-left Action 2 clicked!', event);
   moveCameraToPoint("camera_point_scooper");
 }
-
-//tlAction1.addEventListener('click', handleTopLeftAction1Click);
-//tlAction2.addEventListener('click', handleTopLeftAction2Click);
 
 const gazeboButton = document.getElementById('gazebo-button');
 
@@ -572,7 +571,6 @@ pyButton3.addEventListener('click', async () => {
   console.log('Mess:', output);
 });
 
-// 1. Activate every second-level toggle
 document.querySelectorAll('.dropdown-submenu > .dropdown-toggle')
           .forEach(t => t.addEventListener('click', e => {
               e.preventDefault();
@@ -580,7 +578,6 @@ document.querySelectorAll('.dropdown-submenu > .dropdown-toggle')
               bootstrap.Dropdown.getOrCreateInstance(t).toggle();
           }));
 
-  /* leaf buttons -> your spawn handler */
   document.querySelectorAll('.robot-spawn').forEach(btn =>
     btn.addEventListener('click', e => {
       const { robot, spawn } = e.currentTarget.dataset;
