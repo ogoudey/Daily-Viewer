@@ -131,7 +131,10 @@ async function load(arenaToLoad) {
 function arrange() {
     console.log("Arranging...");
     // TODO: Get items AND their cases, (reform inventory)
-    inventory.forEach((item) => {
+    
+    let itemsToPlace = structuredClone(inventory)
+    while (itemsToPlace.length > 0) {
+      const item = itemsToPlace.shift();
       const original = scene.getObjectByName(item.geometry);
       if (!original) {
         console.warn(`No mesh named "${item.geometry}" found`);
@@ -172,7 +175,11 @@ function arrange() {
 
       // now that we've made all the clones, remove the original
       original.removeFromParent();
-    });
+      
+      if (item.hasOwnProperty("case")) {
+        itemsToPlace.push(item["case"])
+      }
+    }
 }
 
 function inspect() {
@@ -190,6 +197,7 @@ function inspect() {
         tag.style.left = `${x}px`;
         tag.style.top  = `${y - 30}px`;
         
+        // CHange to either count all items or count cases and items respectively
         const record1 = inventory.find(item => item.geometry === choiceObject.name);
         tag.children[0].innerText = record1 ? record1.name : "";;
         

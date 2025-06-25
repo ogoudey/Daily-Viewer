@@ -13,14 +13,14 @@
                                 "case": 
                                     {
                                         "name":"Cup_Sleeve",
-                                        "parts-per":12,
+                                        "parts-per": 12,
                                         "geometry": "Cup_Sleeve",
                                         "spawn": "spawn_point_cup_sleeve",
-                                        "count":30,
+                                        "count": 30,
                                         "case":
                                             {
                                                 "name":"Cup_Case",
-                                                "parts-per":40,
+                                                "parts-per": 40,
                                                 "geometry": "Cup_Case",
                                                 "spawn": "spawn_point_cup_case",
                                                 "count": 2
