@@ -19,14 +19,7 @@ class NewNode:
     def get(self):
         return self.mess
     
-@app.route("/")
-def serve_index():
-    return send_from_directory('../dist', 'index.html')
-    
-@app.route('/<path:path>')
-def serve_static(path):
-    return send_from_directory('../dist', path)
-    
+
       
 
 @app.route("/run-script")
@@ -42,6 +35,7 @@ def run_script():
 def launch_script():
     # Must be run in a ROS environment, because this will start a 
     result = subprocess.run(["gz", "sim"], capture_output=True, text=True)
+    # Launch ROS nodes capturing joint state/pose.
     return result.stdout or "Done"
 
 @app.route("/restart")
@@ -51,6 +45,14 @@ def restart():
     os._exit(8)
     #os.execv(sys.executable, ['python'] + sys.argv) 
 
+@app.route("/")
+def serve_index():
+    return send_from_directory('../dist', 'index.html')
+    
+@app.route('/<path:path>')
+def serve_static(path):
+    return send_from_directory('../dist', path)
+    
 
 
 ##################

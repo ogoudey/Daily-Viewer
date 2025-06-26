@@ -454,6 +454,18 @@ function addPointDropdown(id, f) {
         menu.appendChild(li);
     });
 }
+
+async function generateSDF() {
+    
+    
+       
+    
+    
+    // Returns SDF cannonball to ros2-gazebo for launch with robot.
+}
+
+
+
 console.log("5. helper functions declared");
 /////////////////////
 //Event Listeners //
@@ -549,6 +561,7 @@ const gazeboButton = document.getElementById('gazebo-button');
 
 gazeboButton.addEventListener('click', async () => {
   console.log('Simulate with Gazebo clicked!');
+  sdf_file_path = await generateSDF()
   const res = await fetch('http://' + backend_ip_address + ':5000/launch-sim');
   const output = await res.text();
 });
