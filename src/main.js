@@ -11,16 +11,18 @@ const backend_ip_address = "localhost"
 console.log("1. imports done");
 const canvas = document.querySelector('#c');
 const renderer = new THREE.WebGLRenderer({antialias: true, canvas}); // This calls what we pass requestAnimationFrame
-const fov = 50;
+const fov = 90;
 const aspect = 2;  // the canvas default
 const near = 0.01;
 const far = 200;
 const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+// All 0s works:
 camera.position.z = 0;
 camera.position.x = 0;
 camera.position.y = 0;
-camera.rotation.x = 0;
+camera.rotation.x = -1;
 camera.rotation.y = 0.0;
+camera.rotation.z = 0.0;
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color('gray');
@@ -128,7 +130,7 @@ async function load(arenaToLoad) {
     } catch (err) {
       console.error('Failed to load JSON', err);
     }
-    moveCameraToPoint(worldNotation[arenaToLoad]["cameras"][0]);
+    moveCameraToPoint(worldNotation[arenaToLoad]["cameras"][1]);
     arrange();
     arena = arenaToLoad;
     console.log("3.0.1 loading done. arena:", arena)
@@ -136,8 +138,9 @@ async function load(arenaToLoad) {
 
 function arrange() {
     console.log("Arranging...");
-    
+    let originals = [];
     let itemsToPlace = structuredClone(inventory)
+    let arrangedPerSpawnPoint = {};
     while (itemsToPlace.length > 0) {
       const item = itemsToPlace.shift();
       const original = scene.getObjectByName(item.geometry);
@@ -145,14 +148,16 @@ function arrange() {
         console.warn(`No mesh named "${item.geometry}" found`);
         return;
       }
-
+      
       const count = item.count;
       for (let i = 0; i < count; i++) {
+        
         let worldPos = new THREE.Vector3();
         let worldQuat = new THREE.Quaternion();
         let worldScale = new THREE.Vector3(1,1,1);
         const spawnPoint = scene.getObjectByName(item.spawn);
-         if (spawnPoint) {
+        
+        if (spawnPoint) {
           // Ensure world matrices are up to date
           spawnPoint.updateMatrixWorld(true);
           spawnPoint.getWorldPosition(worldPos);
@@ -161,30 +166,33 @@ function arrange() {
         } else {
           console.warn('No spawn point named "${item.spawn}" found; defaulting to origin');
         }
-        let placerFunction = placers[item.name];
+        let placerFunction = placers[item.geometry];
         if (!placerFunction) {
             placerFunction = placers["default"]; // placeCup
             console.warn("No placer function implemented for", item.name);
         }
-        worldPos = placerFunction(worldPos, i);
-        
-
+        let index = arrangedPerSpawnPoint[item.spawn] ? arrangedPerSpawnPoint[item.spawn] : 0;
+        worldPos = placerFunction(worldPos, index);
         
         const clone = original.clone(true);
         const localPos = model.worldToLocal(worldPos.clone());
         clone.position.copy(localPos);
         clone.quaternion.copy(worldQuat);
         clone.scale.copy(worldScale);
+        clone["item_name"] = item.name; // Added attribute.
         model.add(clone);
+        console.log("Arranging", item.name, i + 1, "/", item.count, "at index", index);
+        arrangedPerSpawnPoint[item.spawn] = arrangedPerSpawnPoint[item.spawn] ? arrangedPerSpawnPoint[item.spawn] + 1 : 1;
       }
 
       // now that we've made all the clones, remove the original
-      original.removeFromParent();
+      originals.push(original);
       
       if (item.hasOwnProperty("case")) {
         itemsToPlace.push(item["case"])
       }
     }
+    originals.forEach(toDelete => {toDelete.removeFromParent();});
 }
 
 function inspect() {
@@ -206,7 +214,7 @@ function inspect() {
         let item;
         while (itemsToCheck.length > 0) {
             item = itemsToCheck.shift();
-            if (item.geometry === choiceObject.name) {
+            if (item.name === choiceObject.item_name) {
                 break;
             }else {
                 
@@ -278,16 +286,16 @@ function render(time) {
     // end lazy stream
     
     if (model && rotate_active) {
-        camera.rotation.y = time * 0.1;  
+        //camera.rotation.y = time * 0.1;  
     }
     
     hovered = pickHelper.pick(pickPosition, scene, camera);
     inspect();
     if (choice) {
-        document.getElementById("chosen-part").innerText = choice.name;
+        document.getElementById("chosen-part").innerText = choice.item_name;
     }
     if (hovered) {
-        document.getElementById("hover-part").innerText = hovered.name;
+        document.getElementById("hover-part").innerText = hovered.item_name;
     }
     renderer.render(scene, camera);
     requestAnimationFrame(render);

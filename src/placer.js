@@ -22,6 +22,13 @@ function placeCupCase(worldPos, i){
     return worldPos;
 }
 
+function placeTub(worldPos, i){
+    worldPos.x = worldPos.x - Math.floor(i/4)*0.26;
+    worldPos.z = worldPos.z - i%4 * 0.26;
+    worldPos.y = worldPos.y
+    return worldPos;
+}
+
 function placeCoffee(worldPos, i){
     worldPos.y = worldPos.y;
     worldPos.z -= i * 0.1;
@@ -36,6 +43,7 @@ const placers = {
     "Coffee": placeCoffee,
     "Cup_Sleeve": placeSleeve,
     "Cup_Case": placeCupCase,
+    "Ice_Cream_Tub": placeTub,
 };
 
 export default placers;

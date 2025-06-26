@@ -153,6 +153,18 @@ def log_dev_data(arena_id):
                         "geometry": "Coffee",
                         "spawn": "spawn_point_coffee",
                         "count": 10
+                    },
+                    {
+                        "name": "Maine Black Bear",
+                        "geometry": "Ice_Cream_Tub",
+                        "spawn": "spawn_point_ice_cream_tub",
+                        "count": 5
+                    },
+                    {
+                        "name": "Cotton Candy",
+                        "geometry": "Ice_Cream_Tub",
+                        "spawn": "spawn_point_ice_cream_tub",
+                        "count": 3
                     }
                 ]
             }
