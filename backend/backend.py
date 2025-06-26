@@ -18,9 +18,6 @@ class NewNode:
     
     def get(self):
         return self.mess
-    
-
-      
 
 @app.route("/run-script")
 def run_script():
@@ -202,8 +199,12 @@ def get_or_create_arena(profile_name, world_name, arena_name):
 # End Database stuff
 
 with app.app_context():
-    arena_id = get_or_create_arena("developer", "world1", "25_central_square")
-    log_dev_data(arena_id) # inserts a timestamp of the current data, the JSON passed front-back
+    try:
+        arena_id = get_or_create_arena("developer", "world1", "25_central_square")
+        log_dev_data(arena_id) # inserts a timestamp of the current data, the JSON passed front-back
+    except Exception:
+        print("No database up.")
+        sys.exit(1)
 
 host = sys.argv[1] if len(sys.argv) > 1 else "localhost"
 print("Running on", host)

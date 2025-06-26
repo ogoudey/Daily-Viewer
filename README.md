@@ -10,8 +10,12 @@ On one computer run the server. The backend manages live data and starts subproc
 ./safe_start.sh 0.0.0.0
 ```
 ### Usage
-Go to the IPadd ress of the host computer, port 5000.
+Go to the IP address of the host computer, port 5000.
 
+### Installation
+```
+pip install flask flask_cors flat_sqlalchemy
+```
 
 
 ## Example (Hypothetical) Use Cases

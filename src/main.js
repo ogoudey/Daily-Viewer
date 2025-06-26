@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 import loadModel, {loadRobot}  from './loader.js';
-
+import generateSDF  from './exporter.js';
 import placers  from './placer.js';
 console.log(placers); // Should print whawt objects: A. were arranged & in inventory B. were in inventory and not arranged 
 
@@ -447,7 +447,6 @@ function addPointDropdown(id, f) {
         btn.textContent = name;
         // optional: hook up a click handler
         btn.addEventListener("click", () => {
-
             f(name);
         });
         li.appendChild(btn);
@@ -455,14 +454,7 @@ function addPointDropdown(id, f) {
     });
 }
 
-async function generateSDF() {
-    
-    
-       
-    
-    
-    // Returns SDF cannonball to ros2-gazebo for launch with robot.
-}
+
 
 
 
@@ -561,9 +553,10 @@ const gazeboButton = document.getElementById('gazebo-button');
 
 gazeboButton.addEventListener('click', async () => {
   console.log('Simulate with Gazebo clicked!');
-  sdf_file_path = await generateSDF()
-  const res = await fetch('http://' + backend_ip_address + ':5000/launch-sim');
-  const output = await res.text();
+  sdf = await generateSDF()
+  console.log(sdf);
+  //const res = await fetch('http://' + backend_ip_address + ':5000/launch-sim');
+  //const output = await res.text();
 });
 
 const pyButton = document.getElementById('send_request');
