@@ -50,8 +50,23 @@ def serve_index():
 def serve_static(path):
     return send_from_directory('../dist', path)
     
+###########
+#  ROS 2  #
+###########
+
+# come up with some logic and interface for robots - running, sim running, training, etc.
+
+@app.route('/<robot_name>')
+def serve_static(path):
+    return send_from_directory('../dist', path)
 
 
+
+
+
+
+
+#### End ROS 2 stuff
 ##################
 # Database stuff #
 ##################
