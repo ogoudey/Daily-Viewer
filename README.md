@@ -17,7 +17,6 @@ Go to the IP address of the host computer, port 5000.
 pip install flask flask_cors flat_sqlalchemy
 ```
 
-
 ## Example (Hypothetical) Use Cases
 ### A Platform for Service Robots
 1. A barista robot gets orders from the POS (point-of-sale) system to execute a `make-drink` policy (and decrements the store's inventory).
@@ -35,3 +34,16 @@ Integrations:
 * Integration with POS provider.
 * Integration with ROS for sensor hardware and robots' topics.
 * Rampant Agentic AI integration for natural language understanding as it pertains to the 3D model, ordering, robotic control, and customer interaction.
+
+Train:
+    disorderer -> sim-poses -> reward=order
+    
+Test deployed:
+    ... -> detector -> policy
+    
+Train:
+    placer -> sim-poses -> reward=new_order (converting inventory / "promises" of order)
+
+
+
+

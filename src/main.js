@@ -11,7 +11,7 @@ const backend_ip_address = "localhost"
 console.log("1. imports done");
 const canvas = document.querySelector('#c');
 const renderer = new THREE.WebGLRenderer({antialias: true, canvas}); // This calls what we pass requestAnimationFrame
-const fov = 90;
+const fov = 120;
 const aspect = 2;  // the canvas default
 const near = 0.01;
 const far = 200;
@@ -103,6 +103,7 @@ let worldNotation = {
 // major helpers  //
 ///////////////////
 console.log("2. things initialized");
+
 async function load(arenaToLoad) {
     console.log("3.0.0 loading start")
     if (!arenaToLoad) {
@@ -110,7 +111,6 @@ async function load(arenaToLoad) {
     }
     console.log("3.0.0.0 loading", arenaToLoad)
     try {
-      const modelScene = await loadModel(arenaToLoad);
       scene.add(modelScene);
       model = modelScene;
       model.rotation.y = 0.0;

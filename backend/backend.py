@@ -55,16 +55,11 @@ def serve_static(path):
 ###########
 
 # come up with some logic and interface for robots - running, sim running, training, etc.
-
+"""
 @app.route('/<robot_name>')
 def serve_static(path):
     return send_from_directory('../dist', path)
-
-
-
-
-
-
+"""
 
 #### End ROS 2 stuff
 ##################
@@ -139,50 +134,56 @@ def log_dev_data_by_name(arena_name):
 
     log_dev_data(arena_id=arena.id)
 
+# Considerata
+## get instrinsic data: arena, objects  (arena is object_0)
+### "repo" to cache
+## == name correspondence
+## get data profile > ...
+
 def log_dev_data(arena_id):
     dev_data = {
-            "inventory": {
-                "items": [
-                    {
-                        "name": "Cup",
-                        "geometry": "Cup",
-                        "spawn": "spawn_point_cup",
-                        "count": 10,
+        "inventory": {
+            "items": [
+                {
+                    "name": "Cup",
+                    "geometry": "Cup",
+                    "spawn": "spawn_point_cup",
+                    "count": 10,
+                    "case": {   
+                        "name": "Cup_Sleeve",
+                        "parts-per": 12,
+                        "geometry": "Cup_Sleeve",
+                        "spawn": "spawn_point_cup_sleeve",
+                        "count": 7,
                         "case": {
-                            "name": "Cup_Sleeve",
-                            "parts-per": 12,
-                            "geometry": "Cup_Sleeve",
-                            "spawn": "spawn_point_cup_sleeve",
-                            "count": 7,
-                            "case": {
-                                "name": "Cup_Case",
-                                "parts-per": 40,
-                                "geometry": "Cup_Case",
-                                "spawn": "spawn_point_cup_case",
-                                "count": 2
-                            }
+                            "name": "Cup_Case",
+                            "parts-per": 40,
+                            "geometry": "Cup_Case",
+                            "spawn": "spawn_point_cup_case",
+                            "count": 2
                         }
-                    },
-                    {
-                        "name": "Coffee",
-                        "geometry": "Coffee",
-                        "spawn": "spawn_point_coffee",
-                        "count": 10
-                    },
-                    {
-                        "name": "Maine Black Bear",
-                        "geometry": "Ice_Cream_Tub",
-                        "spawn": "spawn_point_ice_cream_tub",
-                        "count": 5
-                    },
-                    {
-                        "name": "Cotton Candy",
-                        "geometry": "Ice_Cream_Tub",
-                        "spawn": "spawn_point_ice_cream_tub",
-                        "count": 3
                     }
-                ]
-            }
+                },
+                {
+                    "name": "Coffee",
+                    "geometry": "Coffee",
+                    "spawn": "spawn_point_coffee",
+                    "count": 10
+                },
+                {
+                    "name": "Maine Black Bear",
+                    "geometry": "Ice_Cream_Tub",
+                    "spawn": "spawn_point_ice_cream_tub",
+                    "count": 5
+                },
+                {
+                    "name": "Cotton Candy",
+                    "geometry": "Ice_Cream_Tub",
+                    "spawn": "spawn_point_ice_cream_tub",
+                    "count": 3
+                }
+            ]
+        }
     }
 
     entry = TimeData(
