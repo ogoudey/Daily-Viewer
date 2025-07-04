@@ -111,6 +111,7 @@ async function load(arenaToLoad) {
     }
     console.log("3.0.0.0 loading", arenaToLoad)
     try {
+      const modelScene = await loadModel(arenaToLoad);
       scene.add(modelScene);
       model = modelScene;
       model.rotation.y = 0.0;
@@ -561,7 +562,7 @@ const gazeboButton = document.getElementById('gazebo-button');
 
 gazeboButton.addEventListener('click', async () => {
   console.log('Simulate with Gazebo clicked!');
-  sdf = await generateSDF()
+  const sdf = await generateSDF(scene)
   console.log(sdf);
   //const res = await fetch('http://' + backend_ip_address + ':5000/launch-sim');
   //const output = await res.text();

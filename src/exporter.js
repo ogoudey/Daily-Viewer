@@ -6,8 +6,12 @@ export default async function generateSDF (scene) {
     sdfParts.push('<world name="default">');
 
     scene.traverse(obj => {
-        if (obj.isMesh && obj.userData.sdfName) {
-            const { sdfName, meshUri, mass = 1.0 } = obj.userData;
+        console.log("Traversing", obj.name)
+        if (obj.isMesh) {
+            const sdfName = obj.item_name;
+            const meshUri = "TODO";
+            const mass = 1.0;
+            
             const pos = obj.position;
             const rot = obj.rotation;
 
