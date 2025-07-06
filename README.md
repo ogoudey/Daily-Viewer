@@ -12,6 +12,30 @@ Use cases start with a preexisting real space in the world (an assembly line, ca
 ^^^ mock up of a preexisting cafe.
 
 ## Architecture
+```mermaid
+flowchart LR
+    subgraph Frontend
+        I
+    end 
+    I(User Interface)
+    I <-->  T(Training)
+    I <--> R(Robot APIs)
+    I <--> M(Inventory Management)
+    
+    subgraph Backend
+        T
+        R
+        M
+        subgraph Database
+            D(SQL)
+        end
+        M <--> D
+        T <--> Gazebo
+    end
+    R --> DR[Deployed Robots]
+    POS --> M
+    V[Vendor APIs] --> M
+```
 ### Backend
 On one computer run the server. The backend manages live data and starts subprocesses. After building the `/dist` folder, from `/backend` run:
 ```
