@@ -1,5 +1,5 @@
 # Daily Viewer
-Simulators tend to be opaque. That's why applications (e.g. Robosuite) were developed, but these applications are tailored to research, not development and usability.
+Simulators tend to be opaque. That's why applications to "wrap" simulators (e.g. Robosuite, Omniverse) are being developed. Yet these applications are tailored to research, not necessarily development and usability.
 
 This project hopes to alleviate this issue and ease the integration of robotics into the world. It creates realistic training environments from logistically correct digital twins of real world dynamic environments. In the process it enables:
 - A manager for deployed robots in businesses.
@@ -9,7 +9,7 @@ Use cases start with a preexisting real space in the world (an assembly line, ca
 
 ![image](https://github.com/user-attachments/assets/c3fa409c-0bb0-4e2f-90e3-b0fb3cc6d1a6)
 
-^^^ mock up of a preexisting cafe.
+^^^ mock up of a preexisting cafe. APIs (and sensors, in practice) make the digital twin, which, through the UI, readies the training environments.
 
 ## Architecture
 ```mermaid
