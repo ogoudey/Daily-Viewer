@@ -1,7 +1,14 @@
 # Daily Viewer
-This project is a proof of concept for service industry software.
+Simulators tend to be opaque. That's why applications (e.g. Robosuite) were developed, but these applications are tailored to research, not development and usability.
 
-![image](https://github.com/user-attachments/assets/105787f5-2b26-4b32-9aaa-2de2390ab328)
+This project hopes to alleviate this issue and ease the integration of robotics into the world. It creates realistic training environments from logistically correct digital twins of real world dynamic environments. In the process it enables:
+- A manager for deployed robots in businesses.
+- Interfaces for inventory management, ordering, and POS devices.
+
+Use cases start with a preexisting real space in the world (an assembly line, cafe, warehouse, supermarket...), and the application generates ready-to-use policies for the user's desired outcomes.
+
+![image](https://github.com/user-attachments/assets/c3fa409c-0bb0-4e2f-90e3-b0fb3cc6d1a6)
+
 
 ## Architecture
 ### Backend
