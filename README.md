@@ -9,6 +9,7 @@ Use cases start with a preexisting real space in the world (an assembly line, ca
 
 ![image](https://github.com/user-attachments/assets/c3fa409c-0bb0-4e2f-90e3-b0fb3cc6d1a6)
 
+^^^ mock up of a preexisting cafe.
 
 ## Architecture
 ### Backend
