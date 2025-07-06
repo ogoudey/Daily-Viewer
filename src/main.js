@@ -11,7 +11,7 @@ const backend_ip_address = "localhost"
 console.log("1. imports done");
 const canvas = document.querySelector('#c');
 const renderer = new THREE.WebGLRenderer({antialias: true, canvas}); // This calls what we pass requestAnimationFrame
-const fov = 120;
+const fov = 90;
 const aspect = 2;  // the canvas default
 const near = 0.01;
 const far = 200;
@@ -20,7 +20,7 @@ const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
 camera.position.z = 0;
 camera.position.x = 0;
 camera.position.y = 0;
-camera.rotation.x = -1;
+camera.rotation.x = -0.5;
 camera.rotation.y = 0.0;
 camera.rotation.z = 0.0;
 
