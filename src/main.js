@@ -173,7 +173,7 @@ function arrange() {
         clone.position.copy(localPos);
         clone.quaternion.copy(worldQuat);
         clone.scale.copy(worldScale);
-        clone["item_name"] = item.name; // Added attribute.
+        clone.userData.item_name = item.name; // Added attribute.
         model.add(clone);
         //console.log("Arranging", item.name, i + 1, "/", item.count, "with index", index);
         arrangedPerSpawnPoint[item.spawn] = arrangedPerSpawnPoint[item.spawn] ? arrangedPerSpawnPoint[item.spawn] + 1 : 1;
@@ -598,14 +598,20 @@ function setupEventListeners() {
 
     gazeboButton.addEventListener('click', async () => {
       console.log('Simulate with Gazebo clicked!');
-      const sdf = await generateSDF(scene)
+      const { sdf, meshFiles } = await generateSDF(scene)
+      
+      const formData = new FormData();
+      
+      formData.append('sdf', new Blob([sdf], { type: 'text/xml' }), 'scene.sdf');
+      
+      console.log(meshFiles);
+      for (const { filename, blob } of meshFiles) {
+        formData.append('meshes', blob, filename);
+      }
       
       const res = await fetch(`http://${backend_ip_address}:5000/launch-sim`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ sdf })
+        body: formData
       });
 
       const output = await res.text();

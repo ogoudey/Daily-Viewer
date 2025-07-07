@@ -31,29 +31,39 @@ def run_script():
 
 @app.route("/launch-sim", methods=["POST"])
 def launch_script():
-    data = request.get_json()
-    sdf_content = data.get("sdf")
+    sdf = request.files['sdf']
+    meshes = request.files.getlist('meshes')
 
-    if not sdf_content:
+    if not sdf:
         return "Missing SDF content", 400
-        
+    if not meshes:
+        return "Missing Meshes content", 400    
     # Must be run in a ROS environment, because this will start a 
     
     # Write to a temp file
     with tempfile.NamedTemporaryFile(mode="w", suffix=".sdf", delete=False) as temp_file:
-        temp_file.write(sdf_content)
+        temp_file.write(sdf.read().decode())
         temp_file_path = temp_file.name
+    
+    temp_dir = tempfile.mkdtemp()
+    meshes_dir = os.path.join(temp_dir, 'meshes')
+    os.makedirs(meshes_dir, exist_ok=True)    
+
+    for mesh in meshes:
+        mesh_path = os.path.join(meshes_dir, mesh.filename)
+        mesh.save(mesh_path)
 
     try:
         # Run gz sim
-        result = subprocess.run(["gz", "sim", temp_file_path], capture_output=True, text=True)
+        result = subprocess.run(["gz", "sim", temp_file_path], cwd=temp_dir, capture_output=True, text=True)
         output = result.stdout or result.stderr
-
+        print(output)
         return jsonify({"output": output})
     finally:
         os.remove(temp_file_path)  # Clean up temp file
     
     # Launch ROS nodes capturing joint state/pose.
+    
     return result.stdout or "Done"
 
 @app.route("/restart")
@@ -112,8 +122,10 @@ class TimeData(db.Model):
     data = db.Column(db.JSON)
 
 # Done once:
+"""
 with app.app_context():
     db.create_all()
+"""
 
 # Sample route
 @app.route("/profiles/<int:profile_id>/worlds", methods=["GET"])

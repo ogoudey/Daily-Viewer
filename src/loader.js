@@ -12,10 +12,23 @@ const ARENAS = {
 }
 
 export default function loadModel(arena_name) {
-  const model_path = ARENAS[arena_name]
+  const model_path = ARENAS[arena_name];
+  
+  const uri = `model://${arena_name}/meshes/${model_path.split('/').pop()}`; //added
+  
+  
   const loader = new GLTFLoader();
-  return loader.loadAsync(model_path)
-    .then(gltf => gltf.scene);
+  
+  
+  return loader.loadAsync(model_path).then(gltf => {
+    // Traverse all child objects and set a URI tag
+    gltf.scene.traverse(obj => {
+      if (obj.isMesh) {
+        obj.userData.uri = uri;
+      }
+    });
+    return gltf.scene;
+  });
 }
 
 export function loadRobot() {
