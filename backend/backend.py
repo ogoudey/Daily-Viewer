@@ -3,9 +3,10 @@ from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 
-
+import tempfile
 import subprocess
 import sys
+import os
 
 app = Flask(__name__, static_folder="../dist")
 CORS(app)
@@ -28,10 +29,30 @@ def run_script():
     else:
         return node.mess
 
-@app.route("/launch-sim")
+@app.route("/launch-sim", methods=["POST"])
 def launch_script():
+    data = request.get_json()
+    sdf_content = data.get("sdf")
+
+    if not sdf_content:
+        return "Missing SDF content", 400
+        
     # Must be run in a ROS environment, because this will start a 
-    result = subprocess.run(["gz", "sim"], capture_output=True, text=True)
+    
+    # Write to a temp file
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".sdf", delete=False) as temp_file:
+        temp_file.write(sdf_content)
+        temp_file_path = temp_file.name
+
+    try:
+        # Run gz sim
+        result = subprocess.run(["gz", "sim", temp_file_path], capture_output=True, text=True)
+        output = result.stdout or result.stderr
+
+        return jsonify({"output": output})
+    finally:
+        os.remove(temp_file_path)  # Clean up temp file
+    
     # Launch ROS nodes capturing joint state/pose.
     return result.stdout or "Done"
 
@@ -62,17 +83,6 @@ def serve_static(path):
 """
 
 #### End ROS 2 stuff
-##################
-# Database stuff #
-##################
-
-# Check status with `$ sudo systemctl status mysql`
-
-# Done in mysql CLI:
-# CREATE USER 'flaskuser'@'localhost' IDENTIFIED BY 'flaskpass';
-# GRANT ALL PRIVILEGES ON dev.* TO 'flaskuser'@'localhost';
-# FLUSH PRIVILEGES;
-
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://flaskuser:flaskpass@localhost/dev'
 db = SQLAlchemy(app)
@@ -102,8 +112,8 @@ class TimeData(db.Model):
     data = db.Column(db.JSON)
 
 # Done once:
-#with app.app_context():
-#     db.create_all()
+with app.app_context():
+    db.create_all()
 
 # Sample route
 @app.route("/profiles/<int:profile_id>/worlds", methods=["GET"])
@@ -127,21 +137,7 @@ def get_arena_by_name(arena_name):
         return jsonify({"error": "Arena not found"}), 404
     return jsonify({"arena_id": arena.id})
 
-def log_dev_data_by_name(arena_name):
-    arena = Arena.query.filter_by(name=arena_name).first()
-    if not arena:
-        raise ValueError("Arena not found")
-
-    log_dev_data(arena_id=arena.id)
-
-# Considerata
-## get instrinsic data: arena, objects  (arena is object_0)
-### "repo" to cache
-## == name correspondence
-## get data profile > ...
-
-def log_dev_data(arena_id):
-    dev_data = {
+dev_data_25csq = {
         "inventory": {
             "items": [
                 {
@@ -186,6 +182,16 @@ def log_dev_data(arena_id):
         }
     }
 
+def log_dev_data_by_name(arena_name):
+    arena = Arena.query.filter_by(name=arena_name).first()
+    if not arena:
+        raise ValueError("Arena not found")
+
+    log_dev_data(arena_id=arena.id, dev_data=dev_data_25csq)
+
+def log_dev_data(arena_id, dev_data=None):
+    
+
     entry = TimeData(
         arena_id=arena_id,
         timestamp=datetime.utcnow(),
@@ -229,9 +235,9 @@ def get_or_create_arena(profile_name, world_name, arena_name):
 with app.app_context():
     try:
         arena_id = get_or_create_arena("developer", "world1", "25_central_square")
-        log_dev_data(arena_id) # inserts a timestamp of the current data, the JSON passed front-back
+        log_dev_data(arena_id, dev_data_25csq) # inserts a timestamp of the current data, the JSON passed front-back
     except Exception:
-        print("No database up.")
+        print("No database up or context not created.")
         sys.exit(1)
 
 host = sys.argv[1] if len(sys.argv) > 1 else "localhost"

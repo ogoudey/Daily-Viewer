@@ -4,11 +4,17 @@ export default async function generateSDF (scene) {
     sdfParts.push('<?xml version="1.0" ?>');
     sdfParts.push('<sdf version="1.6">');
     sdfParts.push('<world name="default">');
-
+    console.log("Traversing", scene);
     scene.traverse(obj => {
-        console.log("Traversing", obj.name)
+        console.log("Traversing", obj)
         if (obj.isMesh) {
-            const sdfName = obj.item_name;
+            let sdfName;    // This must change to be unique names.
+            if (obj["item_name"]) {
+                sdfName = obj["item_name"];
+            } else {
+                sdfName = obj.name;    
+            }
+            
             const meshUri = "TODO";
             const mass = 1.0;
             

@@ -8,7 +8,6 @@ console.log(placers); // Should print whawt objects: A. were arranged & in inven
 
 //const backend_ip_address = "192.168.0.10"
 const backend_ip_address = "localhost"
-console.log("1. imports done");
 const canvas = document.querySelector('#c');
 const renderer = new THREE.WebGLRenderer({antialias: true, canvas}); // This calls what we pass requestAnimationFrame
 const fov = 90;
@@ -102,14 +101,11 @@ let worldNotation = {
 /////////////////////
 // major helpers  //
 ///////////////////
-console.log("2. things initialized");
 
 async function load(arenaToLoad) {
-    console.log("3.0.0 loading start")
     if (!arenaToLoad) {
         arenaToLoad = getRandomArena(worldNotation)
     }
-    console.log("3.0.0.0 loading", arenaToLoad)
     try {
       const modelScene = await loadModel(arenaToLoad);
       scene.add(modelScene);
@@ -118,7 +114,6 @@ async function load(arenaToLoad) {
     } catch (err) {
       console.error(err);
     }
-    console.log("3.0.0.1 arena loaded")
     try {
       const dataSeries = await loadData(arenaToLoad);
 
@@ -134,11 +129,9 @@ async function load(arenaToLoad) {
     moveCameraToPoint(worldNotation[arenaToLoad]["cameras"][1]);
     arrange();
     arena = arenaToLoad;
-    console.log("3.0.1 loading done. arena:", arena)
 }
 
 function arrange() {
-    console.log("Arranging...");
     let originals = [];
     let itemsToPlace = structuredClone(inventory)
     let arrangedPerSpawnPoint = {};
@@ -182,7 +175,7 @@ function arrange() {
         clone.scale.copy(worldScale);
         clone["item_name"] = item.name; // Added attribute.
         model.add(clone);
-        console.log("Arranging", item.name, i + 1, "/", item.count, "at index", index);
+        //console.log("Arranging", item.name, i + 1, "/", item.count, "with index", index);
         arrangedPerSpawnPoint[item.spawn] = arrangedPerSpawnPoint[item.spawn] ? arrangedPerSpawnPoint[item.spawn] + 1 : 1;
       }
 
@@ -243,13 +236,78 @@ function inspect() {
 // Start Up  //
 //////////////
 
-console.log("3. startup");
 
-await load();
 
-console.log("3.2 startup done");
-requestAnimationFrame(render); // Point WebGL to render() below
-console.log("4. first render request");
+const form = document.getElementById("arenaForm");
+
+const arenas = Object.keys(worldNotation);
+arenas.forEach((arenaName, idx) => {
+  // 1) wrapper div
+  const wrapper = document.createElement('div');
+  wrapper.className = 'form-check';
+
+  // 2) the radio input
+  const input = document.createElement('input');
+  input.className = 'form-check-input';
+  input.type      = 'radio';
+  input.name      = 'arenaOption';
+  input.id        = `arena-option-${idx}`;
+  input.value     = arenaName;
+  if (idx === 0) input.checked = true;     // default first checked
+
+  // 3) the label
+  const label = document.createElement('label');
+  label.className = 'form-check-label';
+  label.htmlFor   = input.id;
+  label.textContent = arenaName;
+
+  // 4) assemble & attach
+  wrapper.appendChild(input);
+  wrapper.appendChild(label);
+  form.appendChild(wrapper);
+});
+
+
+window.addEventListener('DOMContentLoaded', () => {
+  initApp();  // Kick off your logic
+});
+
+async function initApp() {
+    await introduction();
+    requestAnimationFrame(render); // Point WebGL to render() below
+    setupEventListeners();
+    requestAnimationFrame(render); // Point WebGL to render() below    
+}
+
+function introduction() {
+    return new Promise((resolve) => {
+        const configModal = new bootstrap.Modal(document.getElementById('configModal'));
+        configModal.show();
+        
+        document.getElementById('reloadBtn').addEventListener('click', async () => {
+          // grab the checked radio’s value
+          const chosen = document.querySelector('input[name="arenaOption"]:checked').value;
+          // call the loader
+          await load(chosen);
+
+          // hide the modal
+          const modalEl = document.getElementById('configModal');
+          const modal = bootstrap.Modal.getInstance(modalEl);
+          modal.hide();
+          
+          document.getElementById('configModal').addEventListener(
+            'hidden.bs.modal',
+            () => {
+              resolve();  // ✅ THIS is what you were missing
+            },
+            { once: true } // ensure this runs only once
+          );
+        });
+    });
+}
+
+    
+
 //////////////////////
 // Render function //
 ////////////////////
@@ -261,9 +319,8 @@ function render(time) {
     robots.forEach((robot) => {
         randomizeJoints(robot);
     });
-    
+  
 
-    
     if (resizeRendererToDisplaySize(renderer)) {
         const canvas = renderer.domElement;
         camera.aspect = canvas.clientWidth / canvas.clientHeight;
@@ -364,7 +421,6 @@ async function loadData(arena_name) {
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
     const data = await response.json();
-    console.log("Time-series data:", data);
     return data;
   } catch (err) {
     console.error("Failed to load data:", err);
@@ -374,7 +430,6 @@ async function loadData(arena_name) {
 // -------click
 function choose(event) {
     choice = pickHelper.pick(pickPosition, scene, camera);
-    console.log(choice);
 }
 
 function worldToCanvasPos(worldPos, camera, canvas) {
@@ -443,11 +498,11 @@ function getRandomArena(json) {
 }
 
 function addPointDropdown(id, f) {
-    console.log("\t5.5.0");
+
     const menu = document.getElementById(id);
-    console.log("\t5.5.1 arena:", arena);
+
     const options = worldNotation[arena].cameras; // Potentially change
-    console.log("\t5.5.2");
+
     options.forEach(name => {
         const li = document.createElement("li");
         const btn = document.createElement("button");
@@ -463,141 +518,131 @@ function addPointDropdown(id, f) {
     });
 }
 
+function disposeScene(scene) {
+  scene.traverse((object) => {
+    if (!object.isMesh) return;
 
+    if (object.geometry) {
+      object.geometry.dispose();
+    }
 
+    if (object.material) {
+      if (Array.isArray(object.material)) {
+        object.material.forEach((m) => m.dispose());
+      } else {
+        object.material.dispose();
+      }
+    }
 
+    scene.remove(object);
+  });
 
-console.log("5. helper functions declared");
+  while (scene.children.length > 0) {
+    scene.remove(scene.children[0]);
+  }
+}
+
 /////////////////////
 //Event Listeners //
 ///////////////////
-window.addEventListener('click', choose);
-window.addEventListener('mousemove', setPickPosition);
-window.addEventListener('mouseout', clearPickPosition);
-window.addEventListener('mouseleave', clearPickPosition);
+function setupEventListeners() {
+    window.addEventListener('click', choose);
+    window.addEventListener('mousemove', setPickPosition);
+    window.addEventListener('mouseout', clearPickPosition);
+    window.addEventListener('mouseleave', clearPickPosition);
 
-//mobile
-window.addEventListener('touchstart', (event) => {
-  // prevent the window from scrolling
-  event.preventDefault();
-  setPickPosition(event.touches[0]);
-}, {passive: false});
- 
-window.addEventListener('touchmove', (event) => {
-  setPickPosition(event.touches[0]);
-  choose(event)
-});
- 
-window.addEventListener('touchend', clearPickPosition);
+    //mobile
+    window.addEventListener('touchstart', (event) => {
+      // prevent the window from scrolling
+      event.preventDefault();
+      setPickPosition(event.touches[0]);
+    }, {passive: false});
+     
+    window.addEventListener('touchmove', (event) => {
+      setPickPosition(event.touches[0]);
+      choose(event)
+    });
+     
+    window.addEventListener('touchend', clearPickPosition);
 
-// camera dropdown
-console.log("5.5. before addPointDropdown('cameraMenu', moveCameraToPoint)");
-addPointDropdown("cameraMenu", moveCameraToPoint);
-console.log("6. first event-listeners");
-const form = document.getElementById("arenaForm");
-console.log("6.5. form:", form);
-const arenas = Object.keys(worldNotation);
-arenas.forEach((arenaName, idx) => {
-  // 1) wrapper div
-  const wrapper = document.createElement('div');
-  wrapper.className = 'form-check';
+    // camera dropdown
+    console.log("5.5. before addPointDropdown('cameraMenu', moveCameraToPoint)");
+    addPointDropdown("cameraMenu", moveCameraToPoint);
 
-  // 2) the radio input
-  const input = document.createElement('input');
-  input.className = 'form-check-input';
-  input.type      = 'radio';
-  input.name      = 'arenaOption';
-  input.id        = `arena-option-${idx}`;
-  input.value     = arenaName;
-  if (idx === 0) input.checked = true;     // default first checked
+    ////////////////////////
+    //Specific Listeners //
+    //////////////////////
 
-  // 3) the label
-  const label = document.createElement('label');
-  label.className = 'form-check-label';
-  label.htmlFor   = input.id;
-  label.textContent = arenaName;
+    document.getElementById('reloadBtn').addEventListener('click', () => {
+      disposeScene(scene);
+      // grab the checked radio’s value
+      const chosen = document.querySelector('input[name="arenaOption"]:checked').value;
+      // call the loader
+      load(chosen);
+      // hide the modal
+      const modalEl = document.getElementById('configModal');
+      const modal = bootstrap.Modal.getInstance(modalEl);
+      modal.hide();
+    });
 
-  // 4) assemble & attach
-  wrapper.appendChild(input);
-  wrapper.appendChild(label);
-  form.appendChild(wrapper);
-});
-console.log("7. configure button made");
-////////////////////////
-//Specific Listeners //
-//////////////////////
+    const blButton = document.getElementById('bl-button');
 
-document.getElementById('reloadBtn').addEventListener('click', () => {
-  // grab the checked radio’s value
-  const chosen = document.querySelector('input[name="arenaOption"]:checked').value;
-  // call the loader
-  load(chosen);
-  // hide the modal
-  const modalEl = document.getElementById('configModal');
-  const modal = bootstrap.Modal.getInstance(modalEl);
-  modal.hide();
-});
+    function handleBottomLeftClick(event) {
+      console.log('Bottom-left button clicked!', event);
+        rotate_active = !rotate_active;
+    }
 
-const blButton = document.getElementById('bl-button');
+    blButton.addEventListener('click', handleBottomLeftClick);
 
-function handleBottomLeftClick(event) {
-  console.log('Bottom-left button clicked!', event);
-    rotate_active = !rotate_active;
+    const gazeboButton = document.getElementById('gazebo-button');
+
+    gazeboButton.addEventListener('click', async () => {
+      console.log('Simulate with Gazebo clicked!');
+      const sdf = await generateSDF(scene)
+      
+      const res = await fetch(`http://${backend_ip_address}:5000/launch-sim`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ sdf })
+      });
+
+      const output = await res.text();
+      console.log(output);
+    });
+
+    const pyButton = document.getElementById('send_request');
+
+    pyButton.addEventListener('click', async () => {
+      console.log('Sending...');
+      const res = await fetch('http://' + backend_ip_address + ':5000/run-script');
+      const output = await res.text();
+      console.log('Python says:', output);
+    });
+
+    const pyButton3 = document.getElementById('restart');
+
+    pyButton3.addEventListener('click', async () => {
+      console.log('Sending...');
+      const res = await fetch('http://' + backend_ip_address + ':5000/restart');
+      const output = await res.text();
+      console.log('Mess:', output);
+    });
+
+    document.querySelectorAll('.dropdown-submenu > .dropdown-toggle')
+              .forEach(t => t.addEventListener('click', e => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  bootstrap.Dropdown.getOrCreateInstance(t).toggle();
+              }));
+
+      document.querySelectorAll('.robot-spawn').forEach(btn =>
+        btn.addEventListener('click', e => {
+          const { robot, spawn } = e.currentTarget.dataset;
+          console.log(`Spawn ${robot} at ${spawn}`);
+          spawnRobot(robot, spawn);
+        })
+      );
 }
 
-blButton.addEventListener('click', handleBottomLeftClick);
-
-function handleTopLeftAction1Click(event) {
-  console.log('Top-left Action 1 clicked!', event);
-  moveCameraToPoint("camera_point_barista");
-  
-}
-
-function handleTopLeftAction2Click(event) {
-  console.log('Top-left Action 2 clicked!', event);
-  moveCameraToPoint("camera_point_scooper");
-}
-
-const gazeboButton = document.getElementById('gazebo-button');
-
-gazeboButton.addEventListener('click', async () => {
-  console.log('Simulate with Gazebo clicked!');
-  const sdf = await generateSDF(scene)
-  console.log(sdf);
-  //const res = await fetch('http://' + backend_ip_address + ':5000/launch-sim');
-  //const output = await res.text();
-});
-
-const pyButton = document.getElementById('send_request');
-
-pyButton.addEventListener('click', async () => {
-  console.log('Sending...');
-  const res = await fetch('http://' + backend_ip_address + ':5000/run-script');
-  const output = await res.text();
-  console.log('Python says:', output);
-});
-
-const pyButton3 = document.getElementById('restart');
-
-pyButton3.addEventListener('click', async () => {
-  console.log('Sending...');
-  const res = await fetch('http://' + backend_ip_address + ':5000/restart');
-  const output = await res.text();
-  console.log('Mess:', output);
-});
-
-document.querySelectorAll('.dropdown-submenu > .dropdown-toggle')
-          .forEach(t => t.addEventListener('click', e => {
-              e.preventDefault();
-              e.stopPropagation();
-              bootstrap.Dropdown.getOrCreateInstance(t).toggle();
-          }));
-
-  document.querySelectorAll('.robot-spawn').forEach(btn =>
-    btn.addEventListener('click', e => {
-      const { robot, spawn } = e.currentTarget.dataset;
-      console.log(`Spawn ${robot} at ${spawn}`);
-      spawnRobot(robot, spawn);
-    })
-  );
-console.log("8. rest of the buttons done - and Done.");
