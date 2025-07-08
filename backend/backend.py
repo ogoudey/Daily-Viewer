@@ -42,7 +42,8 @@ def launch_script():
     
     # Write to a temp file
     with tempfile.NamedTemporaryFile(mode="w", suffix=".sdf", delete=False) as temp_file:
-        temp_file.write(sdf.read().decode())
+        sdf_str = sdf.read().decode()
+        temp_file.write(sdf_str)
         temp_file_path = temp_file.name
     
     temp_dir = tempfile.mkdtemp()

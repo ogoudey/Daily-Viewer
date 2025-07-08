@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 import loadModel, {loadRobot}  from './loader.js';
-import generateSDF  from './exporter.js';
+import exportSDF  from './exporter.js';
 import placers  from './placer.js';
 console.log(placers); // Should print whawt objects: A. were arranged & in inventory B. were in inventory and not arranged 
 
@@ -598,7 +598,7 @@ function setupEventListeners() {
 
     gazeboButton.addEventListener('click', async () => {
       console.log('Simulate with Gazebo clicked!');
-      const { sdf, meshFiles } = await generateSDF(scene)
+      const { sdf, meshFiles } = await exportSDF(scene);
       
       const formData = new FormData();
       
