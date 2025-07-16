@@ -3,8 +3,8 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 
 import loadModel, {loadRobot}  from './loader.js';
 import exportSDF  from './exporter.js';
-import placers  from './placer.js';
-console.log(placers); // Should print whawt objects: A. were arranged & in inventory B. were in inventory and not arranged 
+
+
 
 //const backend_ip_address = "192.168.0.10"
 const backend_ip_address = "localhost"
@@ -96,7 +96,7 @@ let worldNotation = {
     "25_central_square": {
         "cameras": ["camera_point_barista", "camera_point_scooper"]
     }
-}
+} // To add more keys
 
 /////////////////////
 // major helpers  //
@@ -127,8 +127,10 @@ async function load(arenaToLoad) {
       console.error('Failed to load JSON', err);
     }
     moveCameraToPoint(worldNotation[arenaToLoad]["cameras"][1]);
-    arrange();
     arena = arenaToLoad;
+    const placers = await loadPlacers(arena);
+    arrange();
+
 }
 
 function arrange() {
@@ -365,6 +367,17 @@ function render(time) {
 ///////////////////////
 // Helper functions //
 /////////////////////
+
+async function loadPlacers(arenaName) {
+    try {
+        const placers = await import(`./placers/${arenaName}.js`);
+        return placers.default;
+    } catch (err) {
+        console.warn(`Could not load placers for arena "${arenaName}", falling back to default.`);
+        const fallback = await import('./placers/default.js');
+        return fallback.default;
+    }
+}
 
 async function spawnRobot(robotName, spawnPointName) {
     // Currently there's only one robot implemented
