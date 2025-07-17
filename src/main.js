@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 import loadModel, {loadRobot}  from './loader.js';
-import exportSDF  from './exporter.js';
+import exportSDF, {exportRobosuiteXML}  from './exporter.js';
 
 
 
@@ -88,6 +88,7 @@ let robots = [];
 let model = null;
 let inventory = null;
 let arena = null;
+let placers = null;
 
 ///////////////////
 //    World     //
@@ -128,7 +129,7 @@ async function load(arenaToLoad) {
     }
     moveCameraToPoint(worldNotation[arenaToLoad]["cameras"][1]);
     arena = arenaToLoad;
-    const placers = await loadPlacers(arena);
+    placers = await loadPlacers(arena);
     arrange();
 
 }
@@ -369,14 +370,8 @@ function render(time) {
 /////////////////////
 
 async function loadPlacers(arenaName) {
-    try {
-        const placers = await import(`./placers/${arenaName}.js`);
-        return placers.default;
-    } catch (err) {
-        console.warn(`Could not load placers for arena "${arenaName}", falling back to default.`);
-        const fallback = await import('./placers/default.js');
-        return fallback.default;
-    }
+    const placers = await import(`./placers/${arenaName}.js`);
+    return placers.default;
 }
 
 async function spawnRobot(robotName, spawnPointName) {
@@ -622,13 +617,39 @@ function setupEventListeners() {
         formData.append('meshes', blob, filename);
       }
       
-      const res = await fetch(`http://${backend_ip_address}:5000/launch-sim`, {
+      const res = await fetch(`http://${backend_ip_address}:5000/launch-gz`, {
         method: 'POST',
         body: formData
       });
 
       const output = await res.text();
       console.log(output);
+    });
+    
+    const robosuiteButton = document.getElementById('robosuite-button');
+
+    robosuiteButton.addEventListener('click', async () => {
+        console.log('Simulate with Robosuite clicked!');
+
+        const { xml, meshFiles } = await exportRobosuiteXML(scene);
+
+        const formData = new FormData();
+
+        // Add MJCF XML as a file
+        formData.append('mjcf', new Blob([xml], { type: 'text/xml' }), 'scene.xml');
+
+        // Add mesh files
+        for (const { filename, blob } of meshFiles) {
+          formData.append('meshes', blob, filename);
+        }
+
+        const res = await fetch(`http://${backend_ip_address}:5000/launch-robosuite`, {
+          method: 'POST',
+          body: formData
+        });
+
+        const output = await res.text();
+        console.log(output);
     });
 
     const pyButton = document.getElementById('send_request');

@@ -29,7 +29,7 @@ def run_script():
     else:
         return node.mess
 
-@app.route("/launch-sim", methods=["POST"])
+@app.route("/launch-gz", methods=["POST"])
 def launch_script():
     sdf = request.files['sdf']
     meshes = request.files.getlist('meshes')
@@ -66,6 +66,50 @@ def launch_script():
     # Launch ROS nodes capturing joint state/pose.
     
     return result.stdout or "Done"
+
+@app.route("/launch-robosuite", methods=["POST"])
+def launch_robosuite():
+    import robosuite
+
+    import xml.etree.ElementTree as ET
+    from stl import mesh
+    
+    mjcf = request.files.get("mjcf")
+    meshes = request.files.getlist("meshes")
+
+    if not mjcf:
+        return "Missing MJCF file", 400
+    if not meshes:
+        return "Missing mesh files", 400
+
+    # Create temp dir for simulation
+    temp_dir = tempfile.mkdtemp()
+    xml_path = os.path.join(temp_dir, "scene.xml")
+    meshes_dir = os.path.join(temp_dir, "meshes")
+    os.makedirs(meshes_dir, exist_ok=True)
+
+    # Save MJCF XML
+    ET.register_namespace('', '')  # Clear default namespace
+    mjcf.save(xml_path)
+
+    # Save mesh files
+    for m in meshes:
+        mesh_path = os.path.join(meshes_dir, m.filename)
+        m.save(mesh_path)
+        
+    for m in meshes:
+        mesh_path = os.path.join(meshes_dir, m.filename)
+
+        # Load ASCII STL
+        mesh_obj = mesh.Mesh.from_file(mesh_path)
+
+        # Save as binary STL
+        mesh_obj.save(mesh_path)
+
+    # Unfinished...
+    
+
+    
 
 @app.route("/restart")
 def restart():

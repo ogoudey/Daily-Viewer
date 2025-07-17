@@ -46,7 +46,7 @@ Go to the IP address of the host computer, port 5000.
 
 ### Installation
 ```
-pip install flask flask_cors flat_sqlalchemy
+pip install flask flask_cors flask_sqlalchemy pymysql
 ```
 
 ## Example (Hypothetical) Use Cases
