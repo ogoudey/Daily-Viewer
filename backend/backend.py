@@ -41,24 +41,37 @@ def launch_script():
     # Must be run in a ROS environment, because this will start a 
     
     # Write to a temp file
-    with tempfile.NamedTemporaryFile(mode="w", suffix=".sdf", delete=False) as temp_file:
-        sdf_str = sdf.read().decode()
-        temp_file.write(sdf_str)
-        temp_file_path = temp_file.name
+
+    sdf_str = sdf.read().decode()
     
+    print(sdf_str)
     temp_dir = tempfile.mkdtemp()
     meshes_dir = os.path.join(temp_dir, 'meshes')
     os.makedirs(meshes_dir, exist_ok=True)    
 
+    # Save meshes and patch URIs
     for mesh in meshes:
         mesh_path = os.path.join(meshes_dir, mesh.filename)
         mesh.save(mesh_path)
+        rel_uri = f"meshes/{mesh.filename}"
+        abs_uri = f"file://{mesh_path}"
+        sdf_str = sdf_str.replace(rel_uri, abs_uri)
 
+    # Now write patched SDF to temp file
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".sdf", delete=False) as temp_file:
+        temp_file.write(sdf_str)
+        temp_file_path = temp_file.name
+    
     try:
-        # Run gz sim
-        result = subprocess.run(["gz", "sim", temp_file_path], cwd=temp_dir, capture_output=True, text=True)
+
+        ros_ws = "ros"
+        subprocess.run(["colcon", "build"], cwd=ros_ws)
+        subprocess.run(["tree"], cwd=temp_dir)
+        gz_arg = temp_file_path
+        result = subprocess.run(["gz", "sim", gz_arg], cwd=temp_dir) #works
+        #result = subprocess.Popen(["ros2", "launch", "ros_gz_sim", "gz_sim.launch.py", f"gz_args:={gz_arg}"], cwd=temp_dir) # doesn't work
+        
         output = result.stdout or result.stderr
-        print(output)
         return jsonify({"output": output})
     finally:
         os.remove(temp_file_path)  # Clean up temp file

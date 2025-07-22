@@ -2,3 +2,6 @@ dist
 node_modules
 blends
 backend/.venv
+backend/ros/install
+backend/ros/build
+backend/ros/log
