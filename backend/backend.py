@@ -44,7 +44,6 @@ def launch_script():
 
     sdf_str = sdf.read().decode()
     
-    print(sdf_str)
     temp_dir = tempfile.mkdtemp()
     meshes_dir = os.path.join(temp_dir, 'meshes')
     os.makedirs(meshes_dir, exist_ok=True)    
@@ -61,18 +60,35 @@ def launch_script():
     with tempfile.NamedTemporaryFile(mode="w", suffix=".sdf", delete=False) as temp_file:
         temp_file.write(sdf_str)
         temp_file_path = temp_file.name
-    
     try:
-
         ros_ws = "ros"
         subprocess.run(["colcon", "build"], cwd=ros_ws)
         subprocess.run(["tree"], cwd=temp_dir)
         gz_arg = temp_file_path
-        result = subprocess.run(["gz", "sim", gz_arg], cwd=temp_dir) #works
-        #result = subprocess.Popen(["ros2", "launch", "ros_gz_sim", "gz_sim.launch.py", f"gz_args:={gz_arg}"], cwd=temp_dir) # doesn't work
+        #result = subprocess.run(["gz", "sim", gz_arg], cwd=temp_dir)
         
-        output = result.stdout or result.stderr
-        return jsonify({"output": output})
+        process = subprocess.Popen(
+            ["ros2", "launch", "ros_gz_sim", "gz_sim.launch.py", f"gz_args:={gz_arg}"],
+            cwd=temp_dir,
+            stdout=subprocess.PIPE,         # Capture stdout
+            stderr=subprocess.STDOUT,       # Combine stderr with stdout
+            text=True,                      # Decode bytes -> str
+            bufsize=1                       # Line buffering (for real-time logs)
+        )
+        
+        
+        # Wait for a line that tells us Gazebo is ready
+        
+        print("✅", flush=True)
+
+        input("Continue?")
+        print("After.")
+        # Evaluate the path directly in Python
+        
+
+        # Spawn robot # RL # ...
+
+        return jsonify({"output": result})
     finally:
         os.remove(temp_file_path)  # Clean up temp file
     
