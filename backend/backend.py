@@ -30,7 +30,7 @@ def run_script():
         return node.mess
 
 @app.route("/launch-gz", methods=["POST"])
-def launch_script():
+def write_sdf():
     sdf = request.files['sdf']
     meshes = request.files.getlist('meshes')
 
@@ -44,8 +44,9 @@ def launch_script():
 
     sdf_str = sdf.read().decode()
     
-    temp_dir = tempfile.mkdtemp()
-    meshes_dir = os.path.join(temp_dir, 'meshes')
+    shared_dir = os.path.join("ros", "shared")
+        
+    meshes_dir = os.path.join(shared_dir, 'meshes')
     os.makedirs(meshes_dir, exist_ok=True)    
 
     # Save meshes and patch URIs
@@ -53,91 +54,15 @@ def launch_script():
         mesh_path = os.path.join(meshes_dir, mesh.filename)
         mesh.save(mesh_path)
         rel_uri = f"meshes/{mesh.filename}"
-        abs_uri = f"file://{mesh_path}"
+        abs_uri = f"file://{os.path.abspath(mesh_path)}"
         sdf_str = sdf_str.replace(rel_uri, abs_uri)
-
-    # Now write patched SDF to temp file
-    with tempfile.NamedTemporaryFile(mode="w", suffix=".sdf", delete=False) as temp_file:
-        temp_file.write(sdf_str)
-        temp_file_path = temp_file.name
-    try:
-        ros_ws = "ros"
-        subprocess.run(["colcon", "build"], cwd=ros_ws)
-        subprocess.run(["tree"], cwd=temp_dir)
-        gz_arg = temp_file_path
-        #result = subprocess.run(["gz", "sim", gz_arg], cwd=temp_dir)
-        
-        process = subprocess.Popen(
-            ["ros2", "launch", "ros_gz_sim", "gz_sim.launch.py", f"gz_args:={gz_arg}"],
-            cwd=temp_dir,
-            stdout=subprocess.PIPE,         # Capture stdout
-            stderr=subprocess.STDOUT,       # Combine stderr with stdout
-            text=True,                      # Decode bytes -> str
-            bufsize=1                       # Line buffering (for real-time logs)
-        )
-        
-        
-        # Wait for a line that tells us Gazebo is ready
-        
-        print("✅", flush=True)
-
-        input("Continue?")
-        print("After.")
-        # Evaluate the path directly in Python
-        
-
-        # Spawn robot # RL # ...
-
-        return jsonify({"output": result})
-    finally:
-        os.remove(temp_file_path)  # Clean up temp file
     
-    # Launch ROS nodes capturing joint state/pose.
+    sdf_path = os.path.join(shared_dir, "scene.sdf")
+
+    with open(sdf_path, "w") as f:
+        f.write(sdf_str)
     
-    return result.stdout or "Done"
-
-@app.route("/launch-robosuite", methods=["POST"])
-def launch_robosuite():
-    import robosuite
-
-    import xml.etree.ElementTree as ET
-    from stl import mesh
-    
-    mjcf = request.files.get("mjcf")
-    meshes = request.files.getlist("meshes")
-
-    if not mjcf:
-        return "Missing MJCF file", 400
-    if not meshes:
-        return "Missing mesh files", 400
-
-    # Create temp dir for simulation
-    temp_dir = tempfile.mkdtemp()
-    xml_path = os.path.join(temp_dir, "scene.xml")
-    meshes_dir = os.path.join(temp_dir, "meshes")
-    os.makedirs(meshes_dir, exist_ok=True)
-
-    # Save MJCF XML
-    ET.register_namespace('', '')  # Clear default namespace
-    mjcf.save(xml_path)
-
-    # Save mesh files
-    for m in meshes:
-        mesh_path = os.path.join(meshes_dir, m.filename)
-        m.save(mesh_path)
-        
-    for m in meshes:
-        mesh_path = os.path.join(meshes_dir, m.filename)
-
-        # Load ASCII STL
-        mesh_obj = mesh.Mesh.from_file(mesh_path)
-
-        # Save as binary STL
-        mesh_obj.save(mesh_path)
-
-    # Unfinished...
-    
-
+    return "Done"
     
 
 @app.route("/restart")

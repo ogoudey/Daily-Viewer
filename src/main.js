@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 import loadModel, {loadRobot}  from './loader.js';
-import exportSDF, {exportRobosuiteXML}  from './exporter.js';
+import exportSDF from './exporter.js';
 
 
 
@@ -626,31 +626,7 @@ function setupEventListeners() {
       console.log(output);
     });
     
-    const robosuiteButton = document.getElementById('robosuite-button');
-
-    robosuiteButton.addEventListener('click', async () => {
-        console.log('Simulate with Robosuite clicked!');
-
-        const { xml, meshFiles } = await exportRobosuiteXML(scene);
-
-        const formData = new FormData();
-
-        // Add MJCF XML as a file
-        formData.append('mjcf', new Blob([xml], { type: 'text/xml' }), 'scene.xml');
-
-        // Add mesh files
-        for (const { filename, blob } of meshFiles) {
-          formData.append('meshes', blob, filename);
-        }
-
-        const res = await fetch(`http://${backend_ip_address}:5000/launch-robosuite`, {
-          method: 'POST',
-          body: formData
-        });
-
-        const output = await res.text();
-        console.log(output);
-    });
+    
 
     const pyButton = document.getElementById('send_request');
 
