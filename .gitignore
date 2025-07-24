@@ -5,3 +5,16 @@ backend/.venv
 backend/ros/install
 backend/ros/build
 backend/ros/log
+backend/ros/src/control_msgs/
+backend/ros/src/control_toolbox/
+backend/ros/src/generate_parameter_library/
+backend/ros/src/gz_ros2_control/
+backend/ros/src/picknik_controllers/
+backend/ros/src/ros2_control/
+backend/ros/src/ros2_control_cmake/
+backend/ros/src/ros2_controllers/
+backend/ros/src/ros2_kortex/
+backend/ros/src/ros2_robotiq_gripper/
+backend/ros/src/ros_gz/
+backend/ros/src/serial/
+
