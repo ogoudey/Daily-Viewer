@@ -30,8 +30,9 @@ flowchart LR
             D(SQL)
         end
         M <--> D
-        T <--> Gazebo
+        
     end
+    T <--> Gazebo
     R --> DR[Deployed Robots]
     POS --> M
     V[Vendor APIs] --> M
